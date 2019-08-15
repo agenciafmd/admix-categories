@@ -206,29 +206,16 @@ No arquivo `packages/agenciafmd/{{ pacote }}/src/resources/views/partials/menus/
            href="#sidebar-settings" data-toggle="collapse" data-parent="#menu" role="button"
            aria-expanded="{{ (admix_is_active(route('admix.{{ pacotes }}.index')) || admix_is_active(route('admix.{{ tipos }}.index'))) ? 'true' : 'false' }}">
             <span class="nav-icon">
-                <i class="icon fe-settings"></i>
+                <i class="icon {{ config('local-{{ pacotes  }}.icon') }}"></i>
             </span>
             <span class="nav-text">
-                {{ config('admix-{{ pacotes  }}.name') }}
+                {{ config('local-{{ pacotes  }}.name') }}
             </span>
         </a>
         <div
             class="navbar-subnav collapse @if (admix_is_active(route('admix.{{ pacotes }}.index')) || admix_is_active(route('admix.{{ tipos }}.index')) ) show @endif"
             id="sidebar-settings">
             <ul class="nav">
-                @can('view', '\Agenciafmd\{{ Pacotes }}\{{ Pacote }}')
-                    <li class="nav-item">
-                        <a class="nav-link {{ admix_is_active(route('admix.{{ pacotes }}.index')) ? 'active' : '' }}"
-                           href="{{ route('admix.{{ pacotes }}.index') }}">
-                            <span class="nav-icon">
-                                <i class="icon fe-minus"></i>
-                            </span>
-                            <span class="nav-text">
-                                {{ config('admix-{{ pacotes  }}.name') }}
-                            </span>
-                        </a>
-                    </li>
-                @endcan
                 @can('view', '\Agenciafmd\{{ Pacotes }}\{{ Tipo }}')
                     <li class="nav-item">
                         <a class="nav-link {{ admix_is_active(route('admix.{{ pacotes }}.{{ tipos }}.index')) ? 'active' : '' }}"
@@ -238,6 +225,19 @@ No arquivo `packages/agenciafmd/{{ pacote }}/src/resources/views/partials/menus/
                             </span>
                             <span class="nav-text">
                                 {{ config('admix-categories.{{ tipos  }}.name') }}
+                            </span>
+                        </a>
+                    </li>
+                @endcan
+                @can('view', '\Agenciafmd\{{ Pacotes }}\{{ Pacote }}')
+                    <li class="nav-item">
+                        <a class="nav-link {{ admix_is_active(route('admix.{{ pacotes }}.index')) ? 'active' : '' }}"
+                           href="{{ route('admix.{{ pacotes }}.index') }}">
+                            <span class="nav-icon">
+                                <i class="icon fe-minus"></i>
+                            </span>
+                            <span class="nav-text">
+                                {{ config('local-{{ pacotes  }}.name') }}
                             </span>
                         </a>
                     </li>
