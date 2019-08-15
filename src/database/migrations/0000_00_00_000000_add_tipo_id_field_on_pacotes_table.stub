@@ -1,0 +1,21 @@
+<?php
+
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class Add{Tipo}IdFieldOn{Pacotes}Table extends Migration
+{
+    public function up()
+    {
+        Schema::table('{pacotes}', function (Blueprint $table) {
+            $table->integer('{tipo}_id')->default(0);
+        });
+    }
+
+    public function down()
+    {
+        Schema::table('{pacotes}', function (Blueprint $table) {
+            $table->dropColumn('{tipo}_id');
+        });
+    }
+}
