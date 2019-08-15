@@ -33,7 +33,7 @@
         {!! Form::bsText('Nome', 'name', null, ['required']) !!}
 
         @if(config("admix-categories.{$categoryType}.description"))
-            {!! Form::bsWysiwyg('Descrição', 'description') !!}
+            {!! Form::bsTextarea('Descrição', 'description') !!}
         @endif
 
         @if(config("admix-categories.{$categoryType}.image"))
