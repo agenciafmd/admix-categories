@@ -44,6 +44,14 @@ class Category extends Model implements AuditableContract, HasMedia
         }
     }
 
+    public function image($modelName, $convertion = '')
+    {
+        // Deus me perdoe por isso
+        config(['upload-configs.tags' => config('upload-configs.' . $modelName)]);
+
+        return $this->getFirstMediaUrl('image', $convertion);
+    }
+
     public function fieldsToConvertion($type = 'tags')
     {
         if (request()->segment(3)) {
