@@ -10,7 +10,8 @@ class CategoryRequest extends FormRequest
     {
         return [
             'is_active' => 'required|boolean',
-            'name' => 'nullable|max:150',
+            'name' => 'required|max:150',
+            'description' => 'nullable|max:150',
         ];
     }
 
@@ -18,7 +19,6 @@ class CategoryRequest extends FormRequest
     {
         return [
             'is_active' => 'ativo',
-            'star' => 'destaque',
             'name' => 'nome',
             'description' => 'descrição',
         ];

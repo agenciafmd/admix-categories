@@ -84,6 +84,5 @@ class CategoryServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../config/admix-categories.php', 'admix-categories');
         $this->mergeConfigFrom(__DIR__ . '/../config/gate.php', 'gate');
         $this->mergeConfigFrom(__DIR__ . '/../config/audit-alias.php', 'audit-alias');
-        $this->mergeConfigFrom(__DIR__ . '/../config/upload-configs.php', 'upload-configs');
     }
 }

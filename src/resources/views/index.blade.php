@@ -31,14 +31,6 @@
 @endsection
 
 @section('filters')
-    @if(config("admix-categories.{$categoryType}.star"))
-        <h6 class="dropdown-header bg-gray-lightest p-2">Destaque</h6>
-        <div class="p-2">
-            {{ Form::text('filter[star]', filter('star'), [
-                    'class' => 'form-control form-control-sm'
-                ]) }}
-        </div>
-    @endif
 @endsection
 
 @section('table')
@@ -50,10 +42,8 @@
                     <th class="w-1 d-none d-md-table-cell">&nbsp;</th>
                     <th class="w-1">{!! column_sort('#', 'id') !!}</th>
                     <th>{!! column_sort('Nome', 'name') !!}</th>
-                    @if(config("admix-categories.{$categoryType}.star"))
-                        <th>{!! column_sort('Destaque', 'star') !!}</th>
-                    @endif
                     <th>{!! column_sort('Status', 'is_active') !!}</th>
+                    <th>{!! column_sort('Ordenação', 'sort') !!}</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -69,14 +59,10 @@
                         </td>
                         <td><span class="text-muted">{{ $item->id }}</span></td>
                         <td>{{ $item->name }}</td>
-                        @if(config("admix-categories.{$categoryType}.star"))
-                            <td>
-                                @include('agenciafmd/admix::partials.label.star', ['star' => $item->star])
-                            </td>
-                        @endif
                         <td>
                             @include('agenciafmd/admix::partials.label.status', ['status' => $item->is_active])
                         </td>
+                        <td>{{ $item->sort }}</td>
                         @if(request()->is('*/trash'))
                             <td class="w-1 text-right">
                                 @include('agenciafmd/admix::partials.btn.restore', ['url' => route("admix.{$categoryModel}.{$categoryType}.restore", $item->id)])

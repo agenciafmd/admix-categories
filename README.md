@@ -69,11 +69,10 @@ return [
         'icon' => 'icon fe-minus',
         'star' => false,
         'description' => false,
-        'image' => false,
         'sort' => 20,
         'default_sort' => [
             '-is_active',
-            '-star',
+            'sort',
             'name',
         ]
     ]
@@ -122,22 +121,6 @@ No arquivo `packages/agenciafmd/{{ pacote }}/src/config/gate.php` adicione antes
         ],
     ],
     'sort' => 10
-],
-```
-
-### Imagem
-
-No arquivo `packages/agenciafmd/{{ pacote }}/src/config/upload-configs.php` adicione
-
-```
-'{{ tipo }}' => [
-    'image' => [
-        'width' => 600,
-        'height' => 600,
-        'quality' => 100,
-        'optimize' => true,
-        'crop' => true,
-    ],
 ],
 ```
 
@@ -316,16 +299,131 @@ Route::prefix(config('admix.url') . '/{{ pacotes }}/{{ tipos }}')
 ```
 
 ### Model
+Crie o arquivo `packages/agenciafmd/{{ pacote }}/src/{{ Tipo }}.php` e adicione
 
+```php
+<?php
+
+namespace Agenciafmd\{{ Pacotes }};
+
+use Agenciafmd\Categories\CategoryBase;
+use Illuminate\Database\Eloquent\Builder;
+
+class {{ Tipo }} extends CategoryBase
+{
+    protected $table = 'categories';
+
+    protected $attributes = [
+        'type' => '{{ tipos }}',
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::addGlobalScope('type', function (Builder $builder) {
+            $builder->where('type', '{{ tipos }}');
+        });
+    }
+}
+```
+
+### Relacionamento
 No arquivo `packages/agenciafmd/{{ pacote }}/src/{{ Pacote }}.php` adicione
 
-```
-use Agenciafmd\Categories\Category;
+```php
+use Agenciafmd\{{ Pacotes }}\{{ Tipo }};
 
 ...
 
 public function {{ tipo }}()
 {
-    return $this->belongsTo(Category::class)->where('type', '{{ tipos }}');
+    return $this->belongsTo({{ Tipo }}::class);
+}
+```
+
+### Factory
+Crie o arquivo `packages/agenciafmd/{{ pacote }}/src/database/factories/{{ Pacotes}}{{ Tipos }}Factory.php` e adicione
+
+```php
+<?php
+
+use Agenciafmd\{{ Pacotes }}\{{ Tipo }};
+
+$factory->define({{ Tipo }}::class, function (\Faker\Generator $faker) {
+    return [
+        'is_active' => $faker->optional(0.3, 1)
+            ->randomElement([0]),
+        'name' => ucfirst($faker->sentence())
+    ];
+});
+```
+
+### Seed com Factory
+Crie o arquivo `packages/agenciafmd/{{ pacote }}/src/database/seeds/{{ Pacotes}}{{ Tipos }}TableSeeder.php` e adicione
+
+```php
+<?php
+
+use Agenciafmd\{{ Pacotes }}\{{ Tipo }};
+use Illuminate\Database\Seeder;
+
+class {{ Pacotes }}{{ Tipos }}TableSeeder extends Seeder
+{
+    protected $total = 100;
+
+    public function run()
+    {
+        {{ Tipo }}::withTrashed()->get()->each->forceDelete();
+
+        $faker = Faker\Factory::create();
+
+        $this->command->getOutput()
+            ->progressStart($this->total);
+        factory({{ Tipo }}::class, $this->total)
+            ->create()
+            ->each(function () {
+                $this->command->getOutput()
+                    ->progressAdvance();
+            });
+        $this->command->getOutput()
+            ->progressFinish();
+    }
+}
+```
+
+### Seed simples sem Factory
+Crie o arquivo `packages/agenciafmd/{{ pacote }}/src/database/seeds/{{ Pacotes}}{{ Tipos }}TableSeeder.php` e adicione
+
+```php
+<?php
+
+use Agenciafmd\{{ Pacotes }}\{{ Tipo }};
+use Illuminate\Database\Seeder;
+
+class {{ Pacotes }}{{ Tipos }}TableSeeder extends Seeder
+{
+    public function run()
+    {
+        {{ Tipo }}::withTrashed()->get()->each->forceDelete();
+
+        $items = collect([
+            'Acessórios',
+            'Temperos Prontos',
+        ]);
+
+        $this->command->getOutput()
+            ->progressStart($items->count());
+        $items->each(function ($item) {
+            Category::create([
+                'is_active' => '1',
+                'name' => $item,
+            ]);
+            $this->command->getOutput()
+                ->progressAdvance();
+        });
+        $this->command->getOutput()
+            ->progressFinish();
+    }
 }
 ```

@@ -26,21 +26,13 @@
 
         {!! Form::bsIsActive('Ativo', 'is_active', null, ['required']) !!}
 
-        @if(config("admix-categories.{$categoryType}.star"))
-            {{ Form::bsBoolean('Destaque', 'star', null, ['required' => true]) }}
-        @endif
-
         {!! Form::bsText('Nome', 'name', null, ['required']) !!}
 
         @if(config("admix-categories.{$categoryType}.description"))
             {!! Form::bsTextarea('Descrição', 'description') !!}
         @endif
 
-        @if(config("admix-categories.{$categoryType}.image"))
-            {!! Form::bsImage('Imagem', 'image', $model, [
-                'config' => config("upload-configs." . Str::singular($categoryType))
-            ]) !!}
-        @endif
+        {!! Form::bsText('Ordenação', 'sort') !!}
     </ul>
     <div class="card-footer bg-gray-lightest text-right">
         <div class="d-flex">
