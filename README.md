@@ -237,7 +237,9 @@ No arquivo `packages/agenciafmd/{{ pacote }}/src/resources/views/index.blade.php
 
 ```blade
 @include('agenciafmd/categories::partials.form.filter', [
-    'type' => 'lines'
+    'label' => config('admix-categories.{{ tipos }}.name'),
+    'type' => '{{ pacotes }}-{{ tipos }}',
+    'name' => '{{ tipo }}_id'
 ])
 @endsection
 ```
@@ -248,7 +250,9 @@ No arquivo `packages/agenciafmd/{{ pacote }}/src/resources/views/form.blade.php`
 
 ```blade
 @include('agenciafmd/categories::partials.form.select', [
-    'type' => 'lines',
+    'label' => config('admix-categories.{{ tipos }}.name'),
+    'type' => '{{ pacotes }}-{{ tipos }}',
+    'name' => '{{ tipo }}_id',
     'required' => true
 ])
 ```
