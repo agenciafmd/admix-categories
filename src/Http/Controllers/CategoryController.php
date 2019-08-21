@@ -15,10 +15,13 @@ class CategoryController extends Controller
 
     protected $categoryType;
 
+    protected $categorySlug;
+
     public function __construct()
     {
         $this->categoryModel = request()->segment(2);
         $this->categoryType = request()->segment(3);
+        $this->categorySlug = $this->categoryModel . '-' . $this->categoryType;
 
         view()->share([
             'categoryModel' => $this->categoryModel,
@@ -26,12 +29,11 @@ class CategoryController extends Controller
         ]);
     }
 
-
     public function index(Request $request)
     {
         session()->put('backUrl', request()->fullUrl());
 
-        $query = QueryBuilder::for(Category::where('type', $this->categoryType))
+        $query = QueryBuilder::for(Category::where('type', $this->categorySlug))
             ->defaultSorts(config("admix-categories.{$this->categoryType}.default_sort"))
             ->allowedFilters((($request->filter) ? array_keys($request->get('filter')) : []));
 
@@ -53,7 +55,7 @@ class CategoryController extends Controller
 
     public function store(CategoryRequest $request)
     {
-        if (Category::create($request->all() + ['type' => $this->categoryType])) {
+        if (Category::create($request->all() + ['type' => $this->categorySlug])) {
             flash('Item inserido com sucesso.', 'success');
         } else {
             flash('Falha no cadastro.', 'danger');
@@ -78,7 +80,7 @@ class CategoryController extends Controller
 
     public function update(Category $category, CategoryRequest $request)
     {
-        if ($category->update($request->all() + ['type' => $this->categoryType])) {
+        if ($category->update($request->all() + ['type' => $this->categorySlug])) {
             flash('Item atualizado com sucesso.', 'success');
         } else {
             flash('Falha na atualização.', 'danger');
@@ -101,6 +103,7 @@ class CategoryController extends Controller
     public function restore($id)
     {
         $category = Category::onlyTrashed()
+            ->where('type', $this->categorySlug)
             ->find($id);
 
         if (!$category) {
@@ -129,6 +132,7 @@ class CategoryController extends Controller
     {
         $category = Category::onlyTrashed()
             ->whereIn('id', $request->get('id', []))
+            ->where('type', $this->categorySlug)
             ->restore();
 
         if ($category) {
