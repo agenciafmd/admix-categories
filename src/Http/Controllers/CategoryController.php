@@ -2,8 +2,8 @@
 
 namespace Agenciafmd\Categories\Http\Controllers;
 
-use Agenciafmd\Categories\Http\Requests\CategoryRequest;
 use Agenciafmd\Categories\Category;
+use Agenciafmd\Categories\Http\Requests\CategoryRequest;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -55,7 +55,15 @@ class CategoryController extends Controller
 
     public function store(CategoryRequest $request)
     {
-        if (Category::create($request->all() + ['type' => $this->categorySlug])) {
+        $data = [
+            'is_active' => $request->get('is_active'),
+            'name' => $request->get('name'),
+            'description' => $request->get('description', ''),
+            'sort' => $request->sort ?? 0,
+            'type' => $this->categorySlug,
+        ];
+
+        if (Category::create($data)) {
             flash('Item inserido com sucesso.', 'success');
         } else {
             flash('Falha no cadastro.', 'danger');
@@ -80,7 +88,15 @@ class CategoryController extends Controller
 
     public function update(Category $category, CategoryRequest $request)
     {
-        if ($category->update($request->all() + ['type' => $this->categorySlug])) {
+        $data = [
+            'is_active' => $request->get('is_active'),
+            'name' => $request->get('name'),
+            'description' => $request->get('description', ''),
+            'sort' => $request->sort ?? 0,
+            'type' => $this->categorySlug,
+        ];
+
+        if ($category->update($data)) {
             flash('Item atualizado com sucesso.', 'success');
         } else {
             flash('Falha na atualização.', 'danger');
