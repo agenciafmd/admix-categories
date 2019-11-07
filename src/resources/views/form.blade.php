@@ -11,7 +11,7 @@
             @else
                 Visualizar
             @endif
-            {{ config("admix-categories.{$categoryType}.name") }}
+            {{ config("admix-categories.{$categorySlug}.name") }}
         </h3>
         <div class="card-options">
             @if(strpos(request()->route()->getName(), 'show') === false)
@@ -28,7 +28,7 @@
 
         {!! Form::bsText('Nome', 'name', null, ['required']) !!}
 
-        @if(config("admix-categories.{$categoryType}.description"))
+        @if(config("admix-categories.{$categorySlug}.description"))
             {!! Form::bsTextarea('Descrição', 'description') !!}
         @endif
 

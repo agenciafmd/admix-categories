@@ -6,7 +6,7 @@
     @if(request()->is('*/trash'))
         Lixeira de
     @endif
-    {{ config("admix-categories.{$categoryType}.name") }}
+    {{ config("admix-categories.{$categorySlug}.name") }}
 @endsection
 
 @section('actions')
@@ -14,7 +14,7 @@
         @include('agenciafmd/admix::partials.btn.back', ['url' => route("admix.{$categoryModel}.{$categoryType}.index")])
     @else
         @can('create', '\Agenciafmd\\' . ucfirst($categoryModel) . '\\' . ucfirst(Str::singular($categoryType)))
-            @include('agenciafmd/admix::partials.btn.create', ['url' => route("admix.{$categoryModel}.{$categoryType}.create"), 'label' => config("admix-categories.{$categoryType}.name")])
+            @include('agenciafmd/admix::partials.btn.create', ['url' => route("admix.{$categoryModel}.{$categoryType}.create"), 'label' => config("admix-categories.{$categorySlug}.name")])
         @endcan
         @can('restore', '\Agenciafmd\\' . ucfirst($categoryModel) . '\\' . ucfirst(Str::singular($categoryType)))
             @include('agenciafmd/admix::partials.btn.trash', ['url' => route("admix.{$categoryModel}.{$categoryType}.trash")])

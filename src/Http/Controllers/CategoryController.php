@@ -25,7 +25,8 @@ class CategoryController extends Controller
 
         view()->share([
             'categoryModel' => $this->categoryModel,
-            'categoryType' => $this->categoryType
+            'categoryType' => $this->categoryType,
+            'categorySlug' => $this->categorySlug
         ]);
     }
 
@@ -34,7 +35,7 @@ class CategoryController extends Controller
         session()->put('backUrl', request()->fullUrl());
 
         $query = QueryBuilder::for(Category::where('type', $this->categorySlug))
-            ->defaultSorts(config("admix-categories.{$this->categoryType}.default_sort"))
+            ->defaultSorts(config("admix-categories.{$this->categorySlug}.default_sort"))
             ->allowedFilters((($request->filter) ? array_keys($request->get('filter')) : []));
 
         if ($request->is('*/trash')) {
