@@ -32,6 +32,10 @@
             {!! Form::bsTextarea('Descrição', 'description') !!}
         @endif
 
+        @if(config("admix-categories.{$categorySlug}.image"))
+            {!! Form::bsImage('Imagem', 'image', $model, ['config' => config("admix-categories.{$categorySlug}.image")]) !!}
+        @endif
+
         {!! Form::bsText('Ordenação', 'sort') !!}
     </ul>
     <div class="card-footer bg-gray-lightest text-right">

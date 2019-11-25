@@ -2,18 +2,25 @@
 
 namespace Agenciafmd\Categories;
 
-use Illuminate\Support\Str;
-use OwenIt\Auditing\Auditable;
+use Agenciafmd\Admix\MediaTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
+use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use Spatie\Image\Manipulations;
+use Spatie\MediaLibrary\HasMedia\HasMedia;
+use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
+use Spatie\MediaLibrary\Models\Media;
 
-class Category extends Model implements AuditableContract
+class Category extends Model implements AuditableContract, HasMedia
 {
-    use SoftDeletes, Auditable;
+    use SoftDeletes, Auditable, HasMediaTrait, MediaTrait {
+        MediaTrait::registerMediaConversions insteadof HasMediaTrait;
+    }
 
     protected $guarded = [
-        //
+        'media',
     ];
 
     protected static function boot()
@@ -37,5 +44,33 @@ class Category extends Model implements AuditableContract
         foreach ($sorts as $sort) {
             $query->orderBy($sort['field'], $sort['direction']);
         }
+    }
+
+    /*
+     * Medialibrary conversions
+     * */
+
+    public $registerMediaConversionsUsingModelInstance = true;
+
+    public function registerMediaConversions(Media $media = null)
+    {
+        $field = config('admix-categories.' . $this->attributes['type'] . '.image');
+        $conversion = $this->addMediaConversion('thumb');
+        if ($field['crop']) {
+            $conversion->fit(Manipulations::FIT_CROP, $field['width'], $field['height']);
+        } else {
+            $conversion->width($field['width'])
+                ->height($field['height']);
+        }
+        if (!app()->environment('local')) {
+            if ($field['optimize']) {
+                $conversion->optimize();
+            }
+            if ($field['quality']) {
+                $conversion->quality($field['quality']);
+            }
+        }
+        $conversion->performOnCollections('image')
+            ->keepOriginalImageFormat();
     }
 }
