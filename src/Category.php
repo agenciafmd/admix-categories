@@ -46,31 +46,29 @@ class Category extends Model implements AuditableContract, HasMedia
         }
     }
 
-    /*
-     * Medialibrary conversions
-     * */
-
     public $registerMediaConversionsUsingModelInstance = true;
 
     public function registerMediaConversions(Media $media = null)
     {
-        $field = config('admix-categories.' . $this->attributes['type'] . '.image');
-        $conversion = $this->addMediaConversion('thumb');
-        if ($field['crop']) {
-            $conversion->fit(Manipulations::FIT_CROP, $field['width'], $field['height']);
-        } else {
-            $conversion->width($field['width'])
-                ->height($field['height']);
-        }
-        if (!app()->environment('local')) {
-            if ($field['optimize']) {
-                $conversion->optimize();
+        $fields = config('upload-configs.' . $this->attributes['type']);
+        foreach ($fields as $collection => $field) {
+            $conversion = $this->addMediaConversion('thumb');
+            if ($field['crop']) {
+                $conversion->fit(Manipulations::FIT_CROP, $field['width'], $field['height']);
+            } else {
+                $conversion->width($field['width'])
+                    ->height($field['height']);
             }
-            if ($field['quality']) {
-                $conversion->quality($field['quality']);
+            if (!app()->environment('local')) {
+                if ($field['optimize']) {
+                    $conversion->optimize();
+                }
+                if ($field['quality']) {
+                    $conversion->quality($field['quality']);
+                }
             }
+            $conversion->performOnCollections($collection)
+                ->keepOriginalImageFormat();
         }
-        $conversion->performOnCollections('image')
-            ->keepOriginalImageFormat();
     }
 }

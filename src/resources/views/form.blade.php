@@ -32,9 +32,13 @@
             {!! Form::bsTextarea('Descrição', 'description') !!}
         @endif
 
-        @if(config("admix-categories.{$categorySlug}.image"))
-            {!! Form::bsImage('Imagem', 'image', $model, ['config' => config("admix-categories.{$categorySlug}.image")]) !!}
-        @endif
+        @foreach(config("upload-configs.{$categorySlug}") as $key => $image)
+            @if($image['multiple'])
+                {!! Form::bsImages($image['name'], $key, $model, ['config' => config("upload-configs.{$categorySlug}")]) !!}
+            @else
+                {!! Form::bsImage($image['name'], $key, $model, ['config' => config("upload-configs.{$categorySlug}")]) !!}
+            @endif
+        @endforeach
 
         {!! Form::bsText('Ordenação', 'sort') !!}
     </ul>
