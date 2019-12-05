@@ -115,7 +115,7 @@ No arquivo `packages/agenciafmd/admix-articles/src/config/gate.php` adicione ant
 
 ```php
 [
-    'name' => 'Artigos » Categorias',
+    'name' => config('admix-articles.name') . ' » Categorias',
     'policy' => '\Agenciafmd\Articles\Policies\CategoryPolicy',
     'abilities' => [
         [
@@ -178,7 +178,7 @@ namespace Agenciafmd\Articles\Policies;
 
 use Agenciafmd\Admix\Policies\AdmixPolicy;
 
-class ArticlePolicy extends AdmixPolicy
+class CateogryPolicy extends AdmixPolicy
 {
     //
 }
@@ -218,7 +218,7 @@ No arquivo `packages/agenciafmd/admix-articles/src/resources/views/partials/menu
             class="navbar-subnav collapse @if (admix_is_active(route('admix.articles.index')) || admix_is_active(route('admix.articles.categories.index')) ) show @endif"
             id="sidebar-settings">
             <ul class="nav">
-                @can('view', '\Agenciafmd\Articles\Categories')
+                @can('view', '\Agenciafmd\Articles\Category')
                     <li class="nav-item">
                         <a class="nav-link {{ admix_is_active(route('admix.articles.categories.index')) ? 'active' : '' }}"
                            href="{{ route('admix.articles.categories.index') }}">
@@ -296,7 +296,7 @@ Route::prefix(config('admix.url') . '/articles/categories')
         Route::post('', '\Agenciafmd\Categories\Http\Controllers\CategoryController@store')
             ->name('store')
             ->middleware('can:create,\Agenciafmd\Articles\Category');
-        Route::get('{tag}', '\Agenciafmd\Categories\Http\Controllers\CategoryController@show')
+        Route::get('{category}', '\Agenciafmd\Categories\Http\Controllers\CategoryController@show')
             ->name('show')
             ->middleware('can:view,\Agenciafmd\Articles\Category');
         Route::get('{category}/edit', '\Agenciafmd\Categories\Http\Controllers\CategoryController@edit')
@@ -488,6 +488,13 @@ class ArticlesCategoriesTableSeeder extends Seeder
                 'name' => $item,
             ]);
 
+            // para imagens atreladas no seed
+            //foreach (config('upload-configs.products-categories') as $key => $image) {
+            //    $fakerPath = __DIR__ . '/../faker/categories/' . Str::slug($item) . '-' . $key . '.jpg';
+            //    copy($fakerPath, storage_path('admix/tmp/' . basename($fakerPath)));
+            //    $category->doUpload(storage_path('admix/tmp/' . basename($fakerPath)), $key);
+            //}
+
             foreach (config('upload-configs.articles-categories') as $key => $image) {
                 $fakerDir = __DIR__ . '/../faker/categories/' . $key;
 
@@ -515,4 +522,18 @@ class ArticlesCategoriesTableSeeder extends Seeder
             ->progressFinish();
     }
 }
+```
+
+### Seed na ArticlesTableSeeder
+
+```
+...
+$categories = Category::pluck('id');
+...
+    ->each(function ($item) use ($faker, $categories) {
+    
+        $item->category_id = $faker->randomElement($categories);
+...
+    $item->save();
+...
 ```
