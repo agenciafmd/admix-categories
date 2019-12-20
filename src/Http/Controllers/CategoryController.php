@@ -36,6 +36,7 @@ class CategoryController extends Controller
 
         $query = QueryBuilder::for(Category::where('type', $this->categorySlug))
             ->defaultSorts(config("admix-categories.{$this->categorySlug}.default_sort"))
+            ->allowedSorts($request->sort)
             ->allowedFilters((($request->filter) ? array_keys($request->get('filter')) : []));
 
         if ($request->is('*/trash')) {

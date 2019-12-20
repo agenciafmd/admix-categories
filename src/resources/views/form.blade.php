@@ -1,7 +1,7 @@
 @extends('agenciafmd/admix::partials.crud.form')
 
 @section('form')
-    {!! Form::bsOpen(['model' => optional($model), 'create' => route("admix.{$categoryModel}.{$categoryType}.store"), 'update' => route("admix.{$categoryModel}.{$categoryType}.update", ['category' => $model->id])]) !!}
+    @formModel(['model' => optional($model), 'create' => route("admix.{$categoryModel}.{$categoryType}.store"), 'update' => route("admix.{$categoryModel}.{$categoryType}.update", [($model->id) ?? 0]), 'id' => 'formCrud', 'class' => 'mb-0 card-list-group card' . ((count($errors) > 0) ? ' was-validated' : '')])
     <div class="card-header bg-gray-lightest">
         <h3 class="card-title">
             @if(request()->is('*/create'))
@@ -21,26 +21,26 @@
     </div>
     <ul class="list-group list-group-flush">
         @if (optional($model)->id)
-            {!! Form::bsText('Código', 'id', null, ['disabled' => true]) !!}
+            @formText(['Código', 'id', null, ['disabled' => true]])
         @endif
 
-        {!! Form::bsIsActive('Ativo', 'is_active', null, ['required']) !!}
+        @formIsActive(['Ativo', 'is_active', null, ['required']])
 
-        {!! Form::bsText('Nome', 'name', null, ['required']) !!}
+        @formText(['Nome', 'name', null, ['required']])
 
         @if(config("admix-categories.{$categorySlug}.description"))
-            {!! Form::bsTextarea('Descrição', 'description') !!}
+            @formTextArea(['Descrição', 'description'])
         @endif
 
         @foreach(config("upload-configs.{$categorySlug}") as $key => $image)
             @if($image['multiple'])
-                {!! Form::bsImages($image['name'], $key, $model, ['config' => config("upload-configs.{$categorySlug}")]) !!}
+                @formImages([$image['name'], $key, $model, ['config' => config("upload-configs.{$categorySlug}")]])
             @else
-                {!! Form::bsImage($image['name'], $key, $model, ['config' => config("upload-configs.{$categorySlug}")]) !!}
+                @formImage([$image['name'], $key, $model, ['config' => config("upload-configs.{$categorySlug}")]])
             @endif
         @endforeach
 
-        {!! Form::bsText('Ordenação', 'sort') !!}
+        @formText(['Ordenação', 'sort'])
     </ul>
     <div class="card-footer bg-gray-lightest text-right">
         <div class="d-flex">
@@ -51,5 +51,5 @@
             @endif
         </div>
     </div>
-    {!! Form::close() !!}
+    @formClose()
 @endsection
