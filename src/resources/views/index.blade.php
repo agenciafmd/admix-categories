@@ -24,9 +24,13 @@
 
 @section('batch')
     @if(request()->is('*/trash'))
-        @inputSelect(['batch', ['' => 'com os selecionados', route("admix.{$categoryModel}.{$categoryType}.batchRestore") => '- restaurar'], null, ['class' => 'js-batch-select form-control custom-select']])
+        @can('restore', '\Agenciafmd\\' . ucfirst($categoryModel) . '\\' . ucfirst(Str::singular($categoryType)))
+            @inputSelect(['batch', ['' => 'com os selecionados', route("admix.{$categoryModel}.{$categoryType}.batchRestore") => '- restaurar'], null, ['class' => 'js-batch-select form-control custom-select']])
+        @endcan
     @else
-        @inputSelect(['batch', ['' => 'com os selecionados', route("admix.{$categoryModel}.{$categoryType}.batchDestroy") => '- remover'], null, ['class' => 'js-batch-select form-control custom-select']])
+        @can('delete', '\Agenciafmd\\' . ucfirst($categoryModel) . '\\' . ucfirst(Str::singular($categoryType)))
+            @inputSelect(['batch', ['' => 'com os selecionados', route("admix.{$categoryModel}.{$categoryType}.batchDestroy") => '- remover'], null, ['class' => 'js-batch-select form-control custom-select']])
+        @endcan
     @endif
 @endsection
 
