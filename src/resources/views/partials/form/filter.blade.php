@@ -2,7 +2,7 @@
 
 <h6 class="dropdown-header bg-gray-lightest p-2">{{ $label }}</h6>
 <div class="p-2">
-    @inputSelect(['filter[' . $name . ']', ['' => '-'] + $categoryService->lists($type)->toArray(), filter($name), [
-    'class' => 'form-control form-control-sm'
-    ]])
+    {{ Form::select('filter[' . $name . ']', ['' => '-'] + $categoryService->lists($type)->toArray(), filter($name), [
+            'class' => 'form-control form-control-sm'
+        ]) }}
 </div>
