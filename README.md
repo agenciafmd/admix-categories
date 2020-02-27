@@ -418,7 +418,7 @@ class ArticlesCategoriesTableSeeder extends Seeder
             ->where('model_type', 'Agenciafmd\\Articles\\Category')
             ->delete();
 
-        $faker = Faker\Factory::create();
+        $faker = Faker\Factory::create('pt_BR');
 
         $this->command->getOutput()
             ->progressStart($this->total);
@@ -478,7 +478,7 @@ class ArticlesCategoriesTableSeeder extends Seeder
 
         $items = collect(config('admix-categories.articles-categories.items'));
 
-        $faker = Faker\Factory::create();
+        $faker = Faker\Factory::create('pt_BR');
 
         $this->command->getOutput()
             ->progressStart($items->count());
