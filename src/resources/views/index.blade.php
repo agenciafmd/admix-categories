@@ -1,5 +1,5 @@
 @extends('agenciafmd/admix::partials.crud.index', [
-    'route' => (request()->is('*/trash') ? route("admix.{$categoryModel}.{$categoryType}.trash") : route("admix.{$categoryModel}.{$categoryType}.trash"))
+    'route' => (request()->is('*/trash') ? route("admix.{$categoryModel}.{$categoryType}.trash") : route("admix.{$categoryModel}.{$categoryType}.index"))
 ])
 
 @section('title')
