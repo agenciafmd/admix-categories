@@ -12,6 +12,7 @@ class CategoryRequest extends FormRequest
             'is_active' => 'required|boolean',
             'name' => 'required|max:150',
             'description' => 'nullable',
+            'media' => 'array|nullable',
         ];
     }
 
