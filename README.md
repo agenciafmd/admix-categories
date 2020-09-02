@@ -135,7 +135,7 @@ No arquivo `packages/agenciafmd/admix-articles/src/config/gate.php` adicione ant
             'method' => 'delete',
         ],
         [
-            'name' => 'restarurar',
+            'name' => 'restaurar',
             'method' => 'restore',
         ],
     ],
