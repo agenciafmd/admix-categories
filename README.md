@@ -9,7 +9,7 @@
 
 ### Instalação
 
-```
+```bash
 composer require agenciafmd/admix-categories:dev-master
 ```
 
