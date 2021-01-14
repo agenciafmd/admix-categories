@@ -2,7 +2,7 @@
 
 namespace Agenciafmd\Categories\Services;
 
-use Agenciafmd\Categories\Category;
+use Agenciafmd\Categories\Models\Category;
 
 class CategoryService
 {

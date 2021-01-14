@@ -8,15 +8,11 @@
                 Criar
             @elseif(request()->is('*/edit'))
                 Editar
-            @else
-                Visualizar
             @endif
             {{ config("admix-categories.{$categorySlug}.name") }}
         </h3>
         <div class="card-options">
-            @if(strpos(request()->route()->getName(), 'show') === false)
-                @include('agenciafmd/admix::partials.btn.save')
-            @endif
+            @include('agenciafmd/admix::partials.btn.save')
         </div>
     </div>
     <ul class="list-group list-group-flush">
@@ -32,11 +28,11 @@
             {{ Form::bsTextarea('Descrição', 'description') }}
         @endif
 
-        @foreach(config("upload-configs.{$categorySlug}") as $key => $image)
-            @if($image['multiple'])
-                {{ Form::bsImages($image['name'], $key, $model, ['config' => config("upload-configs.{$categorySlug}")]) }}
+        @foreach(config("upload-configs.{$categorySlug}") as $field => $upload)
+            @if($upload['multiple'])
+                {{ Form::bsImages($upload['label'], $field, $model, ['config' => $upload['sources'][0]]) }}
             @else
-                {{ Form::bsImage($image['name'], $key, $model, ['config' => config("upload-configs.{$categorySlug}")]) }}
+                {{ Form::bsImage($upload['label'], $field, $model, ['config' => $upload['sources'][0]]) }}
             @endif
         @endforeach
 
@@ -45,10 +41,7 @@
     <div class="card-footer bg-gray-lightest text-right">
         <div class="d-flex">
             @include('agenciafmd/admix::partials.btn.back')
-
-            @if(strpos(request()->route()->getName(), 'show') === false)
-                @include('agenciafmd/admix::partials.btn.save')
-            @endif
+            @include('agenciafmd/admix::partials.btn.save')
         </div>
     </div>
     {{ Form::close() }}

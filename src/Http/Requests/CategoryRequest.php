@@ -11,10 +11,24 @@ class CategoryRequest extends FormRequest
     public function rules()
     {
         return [
-            'is_active' => ['required', 'boolean'],
-            'name' => ['required', 'max:150'],
-            'description' => ['nullable'],
-            'media' => ['array', 'nullable'],
+            'is_active' => [
+                'required',
+                'boolean',
+            ],
+            'name' => [
+                'required',
+                'max:150',
+            ],
+            'description' => [
+                'nullable',
+            ],
+            'sort' => [
+                'nullable',
+            ],
+            'media' => [
+                'array',
+                'nullable',
+            ],
         ];
     }
 

@@ -11,20 +11,8 @@ class CategoryServiceProvider extends ServiceProvider
         $this->providers();
 
         $this->setMenu();
-
-        $this->loadViews();
-
+        
         $this->loadMigrations();
-
-        $this->loadTranslations();
-
-        $this->loadViewComposer();
-
-        $this->publish();
-
-        if ($this->app->environment('local') && $this->app->runningInConsole()) {
-            $this->setLocalFactories();
-        }
     }
 
     public function register()
@@ -34,8 +22,9 @@ class CategoryServiceProvider extends ServiceProvider
 
     protected function providers()
     {
-        $this->app->register(RouteServiceProvider::class);
         $this->app->register(AuthServiceProvider::class);
+        $this->app->register(BladeServiceProvider::class);
+        $this->app->register(RouteServiceProvider::class);
     }
 
     protected function setMenu()
@@ -46,37 +35,9 @@ class CategoryServiceProvider extends ServiceProvider
 //        ]);
     }
 
-    protected function loadViews()
-    {
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'agenciafmd/categories');
-    }
-
     protected function loadMigrations()
     {
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-    }
-
-    protected function loadTranslations()
-    {
-        $this->loadJsonTranslationsFrom(__DIR__ . '/../resources/lang');
-    }
-
-    protected function loadViewComposer()
-    {
-        //
-    }
-
-    protected function publish()
-    {
-        $this->publishes([
-            __DIR__ . '/../resources/views' => base_path('resources/views/vendor/agenciafmd/categories'),
-        ], 'views');
-    }
-
-    public function setLocalFactories()
-    {
-        $this->app->make('Illuminate\Database\Eloquent\Factory')
-            ->load(__DIR__ . '/../database/factories');
     }
 
     protected function loadConfigs()

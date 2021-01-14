@@ -2,7 +2,7 @@
 
 namespace Agenciafmd\Categories\Http\Controllers;
 
-use Agenciafmd\Categories\Category;
+use Agenciafmd\Categories\Models\Category;
 use Agenciafmd\Categories\Http\Requests\CategoryRequest;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -26,7 +26,7 @@ class CategoryController extends Controller
         view()->share([
             'categoryModel' => $this->categoryModel,
             'categoryType' => $this->categoryType,
-            'categorySlug' => $this->categorySlug
+            'categorySlug' => $this->categorySlug,
         ]);
     }
 
@@ -34,8 +34,11 @@ class CategoryController extends Controller
     {
         session()->put('backUrl', request()->fullUrl());
 
-        $query = QueryBuilder::for(Category::where('type', $this->categorySlug))
-            ->defaultSorts(config("admix-categories.{$this->categorySlug}.default_sort"))
+        $query = QueryBuilder::for(Category::where('type', $this->categorySlug));
+        if (!$request->sort) {
+            $query->sort($this->categorySlug);
+        }
+        $query->defaultSorts(config("admix-categories.{$this->categorySlug}.default_sort"))
             ->allowedSorts($request->sort)
             ->allowedFilters((($request->filter) ? array_keys($request->get('filter')) : []));
 
@@ -61,7 +64,7 @@ class CategoryController extends Controller
             'is_active' => $request->get('is_active'),
             'name' => $request->get('name'),
             'description' => $request->get('description', ''),
-            'sort' => $request->sort ?? 0,
+            'sort' => $request->sort ?? null,
             'type' => $this->categorySlug,
         ];
 
@@ -94,7 +97,7 @@ class CategoryController extends Controller
             'is_active' => $request->get('is_active'),
             'name' => $request->get('name'),
             'description' => $request->get('description', ''),
-            'sort' => $request->sort ?? 0,
+            'sort' => $request->sort ?? null,
             'type' => $this->categorySlug,
         ];
 

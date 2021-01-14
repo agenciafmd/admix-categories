@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'Agenciafmd\Categories\Category' => 'Categorias',
+    'Agenciafmd\Categories\Models\Category' => 'Categorias',
 ];

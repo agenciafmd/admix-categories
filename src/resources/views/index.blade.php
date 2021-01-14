@@ -13,10 +13,10 @@
     @if(request()->is('*/trash'))
         @include('agenciafmd/admix::partials.btn.back', ['url' => route("admix.{$categoryModel}.{$categoryType}.index")])
     @else
-        @can('create', '\Agenciafmd\\' . ucfirst($categoryModel) . '\\' . ucfirst(Str::singular($categoryType)))
+        @can('create', '\Agenciafmd\\' . ucfirst($categoryModel) . '\\Models\\' . ucfirst(Str::singular($categoryType)))
             @include('agenciafmd/admix::partials.btn.create', ['url' => route("admix.{$categoryModel}.{$categoryType}.create"), 'label' => config("admix-categories.{$categorySlug}.name")])
         @endcan
-        @can('restore', '\Agenciafmd\\' . ucfirst($categoryModel) . '\\' . ucfirst(Str::singular($categoryType)))
+        @can('restore', '\Agenciafmd\\' . ucfirst($categoryModel) . '\\Models\\' . ucfirst(Str::singular($categoryType)))
             @include('agenciafmd/admix::partials.btn.trash', ['url' => route("admix.{$categoryModel}.{$categoryType}.trash")])
         @endcan
     @endif
@@ -42,8 +42,8 @@
                     <th class="w-1 d-none d-md-table-cell">&nbsp;</th>
                     <th class="w-1">{!! column_sort('#', 'id') !!}</th>
                     <th>{!! column_sort('Nome', 'name') !!}</th>
-                    <th>{!! column_sort('Status', 'is_active') !!}</th>
-                    <th>{!! column_sort('Ordenação', 'sort') !!}</th>
+                    <th class="w-1">{!! column_sort('Ativo', 'is_active') !!}</th>
+                    <th class="w-1">{!! column_sort('Ordenação', 'sort') !!}</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -60,7 +60,7 @@
                         <td><span class="text-muted">{{ $item->id }}</span></td>
                         <td>{{ $item->name }}</td>
                         <td>
-                            @include('agenciafmd/admix::partials.label.status', ['status' => $item->is_active])
+                            @livewire('admix::is-active', ['myModel' => get_class($item), 'myId' => $item->id])
                         </td>
                         <td>{{ $item->sort }}</td>
                         @if(request()->is('*/trash'))
@@ -74,11 +74,10 @@
                                         <i class="icon fe-more-vertical text-muted"></i>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-right">
-                                        @include('agenciafmd/admix::partials.btn.show', ['url' => route("admix.{$categoryModel}.{$categoryType}.show", $item->id)])
-                                        @can('edit', '\Agenciafmd\\' . ucfirst($categoryModel) . '\\' . ucfirst(Str::singular($categoryType)))
+                                        @can('edit', '\Agenciafmd\\' . ucfirst($categoryModel) . '\\Models\\' . ucfirst(Str::singular($categoryType)))
                                             @include('agenciafmd/admix::partials.btn.edit', ['url' => route("admix.{$categoryModel}.{$categoryType}.edit", $item->id)])
                                         @endcan
-                                        @can('delete', '\Agenciafmd\\' . ucfirst($categoryModel) . '\\' . ucfirst(Str::singular($categoryType)))
+                                        @can('delete', '\Agenciafmd\\' . ucfirst($categoryModel) . '\\Models\\' . ucfirst(Str::singular($categoryType)))
                                             @include('agenciafmd/admix::partials.btn.remove', ['url' => route("admix.{$categoryModel}.{$categoryType}.destroy", $item->id)])
                                         @endcan
                                     </div>

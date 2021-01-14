@@ -1,5 +1,7 @@
 ## F&MD - Categories
 
+![Área Administrativa](https://github.com/agenciafmd/admix-categories/raw/master/docs/screenshot.png "Área Administrativa")
+
 [![Downloads](https://img.shields.io/packagist/dt/agenciafmd/admix-categories.svg?style=flat-square)](https://packagist.org/packages/agenciafmd/admix-categories)
 [![Licença](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 
@@ -83,15 +85,24 @@ return [
 return [
     ...
     'articles-categories' => [
-        'image' => [
-            'name' => 'Imagem',
-            'faker_dir' => false, #database_path('faker/categories/image'),
-            'multiple' => false,
-            'width' => 450,
-            'height' => 500,
-            'quality' => 95,
-            'optimize' => true,
-            'crop' => true,
+        'image' => [ //nome do campo
+            'label' => 'imagem', //label do campo
+            'multiple' => false, //se permite o upload multiplo
+            'faker_dir' => false, #database_path('faker/articles-categories/image'),
+            'sources' => [
+                [
+                    'conversion' => 'min-width-1366',
+                    'media' => '(min-width: 1366px)',
+                    'width' => 938,
+                    'height' => 680,
+                ],
+                [
+                    'conversion' => 'min-width-1280',
+                    'media' => '(min-width: 1280px)',
+                    'width' => 776,
+                    'height' => 565,
+                ],
+            ],
         ],
         ...
     ],
@@ -115,7 +126,7 @@ No arquivo `packages/agenciafmd/admix-articles/src/config/gate.php` adicione ant
 
 ```php
 [
-    'name' => config('admix-articles.name') . ' » Categorias',
+    'name' => config('admix-articles.name') . ' » ' . config('admix-categories.articles-categories.name'),
     'policy' => '\Agenciafmd\Articles\Policies\CategoryPolicy',
     'abilities' => [
         [
@@ -189,10 +200,13 @@ class CateogryPolicy extends AdmixPolicy
 No arquivo `packages/agenciafmd/admix-articles/src/Providers/AuthServiceProviders.php` adicione
 
 ```php
+use Agenciafmd\Articles\Policies\CategoryPolicy;
+use Agenciafmd\Articles\Models\Category;
+
 ...
 protected $policies = [
     ...
-    '\Agenciafmd\Articles\Category' => '\Agenciafmd\Articles\Policies\CategoryPolicy',
+    Category::class => CategoryPolicy::class,
 ];
 ...
 ```
@@ -202,11 +216,14 @@ protected $policies = [
 No arquivo `packages/agenciafmd/admix-articles/src/resources/views/partials/menus/item.blade.php` faça as correções
 
 ```blade
-@if (!((admix_cannot('view', '\Agenciafmd\Articles\Article')) && (admix_cannot('view', '\Agenciafmd\Articles\Category'))))
+@can('view', [
+    \Agenciafmd\Articles\Models\Category::class,
+    \Agenciafmd\Articles\Models\Article::class,
+])
     <li class="nav-item">
-        <a class="nav-link @if (admix_is_active(route('admix.articles.index')) || admix_is_active(route('admix.articles.categories.index'))) active @endif"
-           href="#sidebar-settings" data-toggle="collapse" data-parent="#menu" role="button"
-           aria-expanded="{{ (admix_is_active(route('admix.articles.index')) || admix_is_active(route('admix.articles.categories.index'))) ? 'true' : 'false' }}">
+        <a class="nav-link {{ (Str::startsWith(request()->route()->getName(), 'admix.articles')) ? 'active' : '' }}"
+           href="#sidebar-articles" data-toggle="collapse" data-parent="#menu" role="button"
+           aria-expanded="{{ (Str::startsWith(request()->route()->getName(), 'admix.articles')) ? 'true' : 'false' }}">
             <span class="nav-icon">
                 <i class="icon {{ config('admix-articles.icon') }}"></i>
             </span>
@@ -214,13 +231,12 @@ No arquivo `packages/agenciafmd/admix-articles/src/resources/views/partials/menu
                 {{ config('admix-articles.name') }}
             </span>
         </a>
-        <div
-            class="navbar-subnav collapse @if (admix_is_active(route('admix.articles.index')) || admix_is_active(route('admix.articles.categories.index')) ) show @endif"
-            id="sidebar-settings">
+        <div class="navbar-subnav collapse {{ (Str::startsWith(request()->route()->getName(), 'admix.articles')) ? 'show' : '' }}"
+             id="sidebar-articles">
             <ul class="nav">
-                @can('view', '\Agenciafmd\Articles\Category')
+                @can('view', \Agenciafmd\Articles\Models\Category::class)
                     <li class="nav-item">
-                        <a class="nav-link {{ admix_is_active(route('admix.articles.categories.index')) ? 'active' : '' }}"
+                        <a class="nav-link {{ (Str::startsWith(request()->route()->getName(), 'admix.articles.categories')) ? 'active' : '' }}"
                            href="{{ route('admix.articles.categories.index') }}">
                             <span class="nav-icon">
                                 <i class="icon fe-minus"></i>
@@ -231,9 +247,9 @@ No arquivo `packages/agenciafmd/admix-articles/src/resources/views/partials/menu
                         </a>
                     </li>
                 @endcan
-                @can('view', '\Agenciafmd\Articles\Article')
+                @can('view', \Agenciafmd\Articles\Models\Article::class)
                     <li class="nav-item">
-                        <a class="nav-link {{ admix_is_active(route('admix.articles.index')) ? 'active' : '' }}"
+                        <a class="nav-link {{ (Str::startsWith(request()->route()->getName(), 'admix.articles') && !Str::startsWith(request()->route()->getName(), 'admix.articles.categories')) ? 'active' : '' }}"
                            href="{{ route('admix.articles.index') }}">
                             <span class="nav-icon">
                                 <i class="icon fe-minus"></i>
@@ -280,64 +296,79 @@ No arquivo `packages/agenciafmd/admix-articles/src/resources/views/form.blade.ph
 No arquivo `packages/agenciafmd/admix-articles/src/routes/web.php` e adicione **antes** das rotas do pacote
 
 ```
-Route::prefix(config('admix.url') . '/articles/categories')
-    ->name('admix.articles.categories.')
-    ->middleware(['auth:admix-web'])
-    ->group(function () {
-        Route::get('', '\Agenciafmd\Categories\Http\Controllers\CategoryController@index')
-            ->name('index')
-            ->middleware('can:view,\Agenciafmd\Articles\Category');
-        Route::get('trash', '\Agenciafmd\Categories\Http\Controllers\CategoryController@index')
-            ->name('trash')
-            ->middleware('can:restore,\Agenciafmd\Articles\Category');
-        Route::get('create', '\Agenciafmd\Categories\Http\Controllers\CategoryController@create')
-            ->name('create')
-            ->middleware('can:create,\Agenciafmd\Articles\Category');
-        Route::post('', '\Agenciafmd\Categories\Http\Controllers\CategoryController@store')
-            ->name('store')
-            ->middleware('can:create,\Agenciafmd\Articles\Category');
-        Route::get('{category}', '\Agenciafmd\Categories\Http\Controllers\CategoryController@show')
-            ->name('show')
-            ->middleware('can:view,\Agenciafmd\Articles\Category');
-        Route::get('{category}/edit', '\Agenciafmd\Categories\Http\Controllers\CategoryController@edit')
-            ->name('edit')
-            ->middleware('can:update,\Agenciafmd\Articles\Category');
-        Route::put('{category}', '\Agenciafmd\Categories\Http\Controllers\CategoryController@update')
-            ->name('update')
-            ->middleware('can:update,\Agenciafmd\Articles\Category');
-        Route::delete('destroy/{category}', '\Agenciafmd\Categories\Http\Controllers\CategoryController@destroy')
-            ->name('destroy')
-            ->middleware('can:delete,\Agenciafmd\Articles\Category');
-        Route::post('{id}/restore', '\Agenciafmd\Categories\Http\Controllers\CategoryController@restore')
-            ->name('restore')
-            ->middleware('can:restore,\Agenciafmd\Articles\Category');
-        Route::post('batchDestroy', '\Agenciafmd\Categories\Http\Controllers\CategoryController@batchDestroy')
-            ->name('batchDestroy')
-            ->middleware('can:delete,\Agenciafmd\Articles\Category');
-        Route::post('batchRestore', '\Agenciafmd\Categories\Http\Controllers\CategoryController@batchRestore')
-            ->name('batchRestore')
-            ->middleware('can:restore,\Agenciafmd\Articles\Category');
-    });
+use Agenciafmd\Categories\Http\Controllers\CategoryController;
+use Agenciafmd\Articles\Models\Category;
+
+if (config('admix-articles.category')) {
+    Route::get('articles/categories', [CategoryController::class, 'index'])
+        ->name('admix.articles.categories.index')
+        ->middleware('can:view,' . Category::class);
+    Route::get('articles/categories/trash', [CategoryController::class, 'index'])
+        ->name('admix.articles.categories.trash')
+        ->middleware('can:restore,' . Category::class);
+    Route::get('articles/categories/create', [CategoryController::class, 'create'])
+        ->name('admix.articles.categories.create')
+        ->middleware('can:create,' . Category::class);
+    Route::post('articles/categories', [CategoryController::class, 'store'])
+        ->name('admix.articles.categories.store')
+        ->middleware('can:create,' . Category::class);
+    Route::get('articles/categories/{category}', [CategoryController::class, 'show'])
+        ->name('admix.articles.categories.show')
+        ->middleware('can:view,' . Category::class);
+    Route::get('articles/categories/{category}/edit', [CategoryController::class, 'edit'])
+        ->name('admix.articles.categories.edit')
+        ->middleware('can:update,' . Category::class);
+    Route::put('articles/categories/{category}', [CategoryController::class, 'update'])
+        ->name('admix.articles.categories.update')
+        ->middleware('can:update,' . Category::class);
+    Route::delete('articles/categories/destroy/{category}', [CategoryController::class, 'destroy'])
+        ->name('admix.articles.categories.destroy')
+        ->middleware('can:delete,' . Category::class);
+    Route::post('articles/categories/{id}/restore', [CategoryController::class, 'restore'])
+        ->name('admix.articles.categories.restore')
+        ->middleware('can:restore,' . Category::class);
+    Route::post('articles/categories/batchDestroy', [CategoryController::class, 'batchDestroy'])
+        ->name('admix.articles.categories.batchDestroy')
+        ->middleware('can:delete,' . Category::class);
+    Route::post('articles/categories/batchRestore', [CategoryController::class, 'batchRestore'])
+        ->name('admix.articles.categories.batchRestore')
+        ->middleware('can:restore,' . Category::class);
+}
 ```
 
 ### Model
-Crie o arquivo `packages/agenciafmd/admix-articles/src/Category.php` e adicione
+Crie o arquivo `packages/agenciafmd/admix-articles/src/Models/Category.php` e adicione
 
 ```php
 <?php
 
-namespace Agenciafmd\Articles;
+namespace Agenciafmd\Articles\Models;
 
-use Agenciafmd\Categories\Category as CategoryBase;
+use Agenciafmd\Categories\Models\Category as CategoryBase;
+use Database\Factories\ArticleCategoryFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Searchable\Searchable;
+use Spatie\Searchable\SearchResult;
 
-class Category extends CategoryBase
+class Category extends CategoryBase implements Searchable
 {
+    use HasFactory;
+
     protected $table = 'categories';
 
     protected $attributes = [
         'type' => 'articles-categories',
     ];
+
+    public $searchableType;
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->searchableType = config('admix-categories.articles-categories.name');
+    }
 
     protected static function boot()
     {
@@ -348,6 +379,22 @@ class Category extends CategoryBase
         });
     }
 
+    public function getSearchResult(): SearchResult
+    {
+        return new SearchResult(
+            $this,
+            "{$this->name}",
+            route('admix.articles.categories.edit', $this->id)
+        );
+    }
+
+    public function getUrlAttribute()
+    {
+        return route('frontend.articles.index', [
+            $this->attributes['slug'],
+        ]);
+    }
+
     public function getMorphClass()
     {
         return CategoryBase::class;
@@ -355,20 +402,21 @@ class Category extends CategoryBase
 
     public function scopeSort($query, $type = 'articles-categories')
     {
-        $sorts = default_sort(config("admix-categories.{$type}.default_sort"));
+        parent::scopeSort($query, $type);
+    }
 
-        foreach ($sorts as $sort) {
-            $query->orderBy($sort['field'], $sort['direction']);
-        }
+    protected static function newFactory()
+    {
+        return ArticleCategoryFactory::new();
     }
 }
 ```
 
 ### Relacionamento
-No arquivo `packages/agenciafmd/admix-articles/src/Article.php` adicione
+No arquivo `packages/agenciafmd/admix-articles/src/Models/Article.php` adicione
 
 ```php
-use Agenciafmd\Articles\Category;
+use Agenciafmd\Articles\Models\Category;
 
 ...
 
@@ -379,60 +427,67 @@ public function category()
 ```
 
 ### Factory
-Crie o arquivo `packages/agenciafmd/admix-articles/src/database/factories/ArticlesCategoriesFactory.php` e adicione
+Crie o arquivo `packages/agenciafmd/admix-articles/src/database/factories/ArticleCategoryFactory.php.stub` e adicione
 
 ```php
 <?php
 
-use Agenciafmd\Articles\Category;
+namespace Database\Factories;
 
-$factory->define(Category::class, function (\Faker\Generator $faker) {
-    return [
-        'is_active' => $faker->optional(0.3, 1)
-            ->randomElement([0]),
-        'name' => ucfirst($faker->sentence())
-    ];
-});
+use Agenciafmd\Articles\Models\Category;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+class ArticleCategoryFactory extends Factory
+{
+    protected $model = Category::class;
+
+    public function definition()
+    {
+        return [
+            'is_active' => $this->faker->optional(0.3, 1)
+                ->randomElement([0]),
+            'name' => $this->faker->sentence(),
+        ];
+    }
+}
 ```
 
 ### Seed com Factory
-Crie o arquivo `packages/agenciafmd/admix-articles/src/database/seeds/ArticlesCategoriesTableSeeder.php` e adicione
+Crie o arquivo `packages/agenciafmd/admix-articles/src/database/seeds/ArticlesCategoriesTableSeeder.php.stub` e adicione
 
 ```php
 <?php
 
-use Agenciafmd\Articles\Category;
+namespace Database\Seeders;
+
+use Agenciafmd\Articles\Models\Category;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use Faker\Factory;
 
 class ArticlesCategoriesTableSeeder extends Seeder
 {
-    protected $total = 30;
+    protected int $total = 20;
 
     public function run()
     {
-        Category::withTrashed()
-            ->get()->each->forceDelete();
-
-        DB::table('media')
-            ->where('model_type', 'Agenciafmd\\Articles\\Category')
-            ->delete();
-
-        $faker = Faker\Factory::create('pt_BR');
+        Category::query()
+            ->truncate();
 
         $this->command->getOutput()
             ->progressStart($this->total);
 
-        factory(Category::class, $this->total)
-            ->create()
+        $faker = Factory::create('pt_BR');
+
+        Category::factory($this->total)
+            ->create()            
             ->each(function ($category) use ($faker) {
                 foreach (config('upload-configs.articles-categories') as $key => $image) {
-                    $fakerDir = __DIR__ . '/../faker/categories/' . $key;
-    
+                    $fakerDir = __DIR__ . '/../faker/articles-categories/' . $key;
+
                     if ($image['faker_dir']) {
                         $fakerDir = $image['faker_dir'];
                     }
-    
+
                     if ($image['multiple']) {
                         $items = $faker->numberBetween(0, 6);
                         for ($i = 0; $i < $items; $i++) {
@@ -444,7 +499,7 @@ class ArticlesCategoriesTableSeeder extends Seeder
                 }
 
                 $category->save();
-    
+
                 $this->command->getOutput()
                     ->progressAdvance();
             });
@@ -456,63 +511,35 @@ class ArticlesCategoriesTableSeeder extends Seeder
 ```
 
 ### Seed sem Factory
-Crie o arquivo `packages/agenciafmd/admix-articles/src/database/seeds/ArticlesCategoriesTableSeeder.php` e adicione
+Crie o arquivo `packages/agenciafmd/admix-articles/src/database/seeders/ArticlesCategoriesTableSeeder.php.stub` e adicione
 
 ```php
 <?php
 
-use Agenciafmd\Articles\Category;
+namespace Database\Seeders;
+
+use Agenciafmd\Articles\Models\Category;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class ArticlesCategoriesTableSeeder extends Seeder
 {
+    protected int $total = 10;
+
     public function run()
     {
-        Category::withTrashed()
-            ->get()->each->forceDelete();
-
-        DB::table('media')
-            ->where('model_type', 'Agenciafmd\\Articles\\Category')
-            ->delete();
+        Category::query()
+            ->truncate();
 
         $items = collect(config('admix-categories.articles-categories.items'));
 
-        $faker = Faker\Factory::create('pt_BR');
-
         $this->command->getOutput()
             ->progressStart($items->count());
-        $items->each(function ($item) use ($faker) {
-            $category = Category::create([
-                'is_active' => '1',
+
+        $items->each(function ($item) {
+            Category::create([
+                'is_active' => 1,
                 'name' => $item,
             ]);
-
-            // para imagens atreladas no seed
-            //foreach (config('upload-configs.products-categories') as $key => $image) {
-            //    $fakerPath = __DIR__ . '/../faker/categories/' . Str::slug($item) . '-' . $key . '.jpg';
-            //    copy($fakerPath, storage_path('admix/tmp/' . basename($fakerPath)));
-            //    $category->doUpload(storage_path('admix/tmp/' . basename($fakerPath)), $key);
-            //}
-
-            foreach (config('upload-configs.articles-categories') as $key => $image) {
-                $fakerDir = __DIR__ . '/../faker/categories/' . $key;
-
-                if ($image['faker_dir']) {
-                    $fakerDir = $image['faker_dir'];
-                }
-
-                if ($image['multiple']) {
-                    $items = $faker->numberBetween(0, 6);
-                    for ($i = 0; $i < $items; $i++) {
-                        $category->doUploadMultiple($faker->file($fakerDir, storage_path('admix/tmp')), $key);
-                    }
-                } else {
-                    $category->doUpload($faker->file($fakerDir, storage_path('admix/tmp')), $key);
-                }
-            }
-
-            $category->save();
 
             $this->command->getOutput()
                 ->progressAdvance();
@@ -524,16 +551,13 @@ class ArticlesCategoriesTableSeeder extends Seeder
 }
 ```
 
-### Seed na ArticlesTableSeeder
+### Seed na ArticleFactory
 
 ```
 ...
-$categories = Category::pluck('id');
+$categories = Category::pluck('id')
+    ->toArray();
 ...
-    ->each(function ($item) use ($faker, $categories) {
-    
-        $item->category_id = $faker->randomElement($categories);
-...
-    $item->save();
+    'category_id' => $this->faker->randomElement($categories),
 ...
 ```
