@@ -93,14 +93,14 @@ return [
                 [
                     'conversion' => 'min-width-1366',
                     'media' => '(min-width: 1366px)',
-                    'width' => 938,
-                    'height' => 680,
+                    'width' => 1024, // 16:9
+                    'height' => 576,
                 ],
                 [
                     'conversion' => 'min-width-1280',
                     'media' => '(min-width: 1280px)',
                     'width' => 776,
-                    'height' => 565,
+                    'height' => 437,
                 ],
             ],
         ],
@@ -156,14 +156,17 @@ No arquivo `packages/agenciafmd/admix-articles/src/config/gate.php` adicione ant
 
 ### Validação
 
-No arquivo `packages/agenciafmd/admix-articles/src/Http/Requests/CategoryRequest.php` adicione
+No arquivo `packages/agenciafmd/admix-articles/src/Http/Requests/ArticleRequest.php` adicione
 
 ```
 public function rules()
 {
     return [
         ...
-        'category_id' => 'required|integer',
+        'category_id' => [
+            'required',
+            'integer',
+        ],
         ...
     ];
 }
@@ -189,7 +192,7 @@ namespace Agenciafmd\Articles\Policies;
 
 use Agenciafmd\Admix\Policies\AdmixPolicy;
 
-class CateogryPolicy extends AdmixPolicy
+class CategoryPolicy extends AdmixPolicy
 {
     //
 }
@@ -291,12 +294,199 @@ No arquivo `packages/agenciafmd/admix-articles/src/resources/views/form.blade.ph
 ])
 ```
 
+### Request
+
+Crie o arquivo `packages/agenciafmd/admix-articles/src/Http/Requests/CategoryRequest.php`
+
+```php
+<?php
+
+namespace Agenciafmd\Articles\Http\Requests;
+
+use Agenciafmd\Categories\Http\Requests\CategoryRequest as BaseCategoryRequest;
+
+class CategoryRequest extends BaseCategoryRequest
+{
+    //
+}
+```
+
+### Controller
+
+Crie o arquivo `packages/agenciafmd/admix-articles/src/Http/Controllers/CategoryController.php`
+
+```php
+<?php
+
+namespace Agenciafmd\Articles\Http\Controllers;
+
+use Agenciafmd\Articles\Models\Category;
+use Agenciafmd\Articles\Http\Requests\CategoryRequest;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Spatie\QueryBuilder\QueryBuilder;
+
+class CategoryController extends Controller
+{
+    protected $categoryModel;
+
+    protected $categoryType;
+
+    protected $categorySlug;
+
+    public function __construct()
+    {
+        $this->categoryModel = request()->segment(2);
+        $this->categoryType = request()->segment(3);
+        $this->categorySlug = $this->categoryModel . '-' . $this->categoryType;
+
+        view()->share([
+            'categoryModel' => $this->categoryModel,
+            'categoryType' => $this->categoryType,
+            'categorySlug' => $this->categorySlug,
+        ]);
+    }
+
+    public function index(Request $request)
+    {
+        session()->put('backUrl', request()->fullUrl());
+
+        $query = QueryBuilder::for(Category::query());
+        if (!$request->sort) {
+            $query->sort($this->categorySlug);
+        }
+        $query->defaultSorts(config("admix-categories.{$this->categorySlug}.default_sort"))
+            ->allowedSorts($request->sort)
+            ->allowedFilters((($request->filter) ? array_keys($request->get('filter')) : []));
+
+        if ($request->is('*/trash')) {
+            $query->onlyTrashed();
+        }
+
+        $view['items'] = $query->paginate($request->get('per_page', 50));
+
+        return view('agenciafmd/categories::index', $view);
+    }
+
+    public function create(Category $category)
+    {
+        $view['model'] = $category;
+
+        return view('agenciafmd/categories::form', $view);
+    }
+
+    public function store(CategoryRequest $request)
+    {
+        $data = [
+            'is_active' => $request->get('is_active'),
+            'name' => $request->get('name'),
+            'description' => $request->get('description', ''),
+            'sort' => $request->sort ?? null,
+        ];
+
+        if (Category::create($data)) {
+            flash('Item inserido com sucesso.', 'success');
+        } else {
+            flash('Falha no cadastro.', 'danger');
+        }
+
+        return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
+    }
+
+    public function show(Category $category)
+    {
+        $view['model'] = $category;
+
+        return view('agenciafmd/categories::form', $view);
+    }
+
+    public function edit(Category $category)
+    {
+        $view['model'] = $category;
+
+        return view('agenciafmd/categories::form', $view);
+    }
+
+    public function update(Category $category, CategoryRequest $request)
+    {
+        $data = [
+            'is_active' => $request->get('is_active'),
+            'name' => $request->get('name'),
+            'description' => $request->get('description', ''),
+            'sort' => $request->sort ?? null,
+        ];
+
+        if ($category->update($data)) {
+            flash('Item atualizado com sucesso.', 'success');
+        } else {
+            flash('Falha na atualização.', 'danger');
+        }
+
+        return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
+    }
+
+    public function destroy(Category $category)
+    {
+        if ($category->delete()) {
+            flash('Item removido com sucesso.', 'success');
+        } else {
+            flash('Falha na remoção.', 'danger');
+        }
+
+        return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
+    }
+
+    public function restore($id)
+    {
+        $category = Category::onlyTrashed()
+            ->find($id);
+
+        if (!$category) {
+            flash('Item já restaurado.', 'danger');
+        } elseif ($category->restore()) {
+            flash('Item restaurado com sucesso.', 'success');
+        } else {
+            flash('Falha na restauração.', 'danger');
+        }
+
+        return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
+    }
+
+    public function batchDestroy(Request $request)
+    {
+        if (Category::destroy($request->get('id', []))) {
+            flash('Item removido com sucesso.', 'success');
+        } else {
+            flash('Falha na remoção.', 'danger');
+        }
+
+        return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
+    }
+
+    public function batchRestore(Request $request)
+    {
+        $category = Category::onlyTrashed()
+            ->whereIn('id', $request->get('id', []))
+            ->restore();
+
+        if ($category) {
+            flash('Item restaurado com sucesso.', 'success');
+        } else {
+            flash('Falha na restauração.', 'danger');
+        }
+
+        return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
+    }
+}
+```
+
 ### Rotas
 
 No arquivo `packages/agenciafmd/admix-articles/src/routes/web.php` e adicione **antes** das rotas do pacote
 
 ```
-use Agenciafmd\Categories\Http\Controllers\CategoryController;
+use Agenciafmd\Articles\Http\Controllers\CategoryController;
 use Agenciafmd\Articles\Models\Category;
 
 if (config('admix-articles.category')) {
@@ -395,11 +585,6 @@ class Category extends CategoryBase implements Searchable
         ]);
     }
 
-    public function getMorphClass()
-    {
-        return CategoryBase::class;
-    }
-
     public function scopeSort($query, $type = 'articles-categories')
     {
         parent::scopeSort($query, $type);
@@ -452,7 +637,7 @@ class ArticleCategoryFactory extends Factory
 }
 ```
 
-### Seed com Factory
+### Seed
 Crie o arquivo `packages/agenciafmd/admix-articles/src/database/seeds/ArticlesCategoriesTableSeeder.php.stub` e adicione
 
 ```php
@@ -461,25 +646,40 @@ Crie o arquivo `packages/agenciafmd/admix-articles/src/database/seeds/ArticlesCa
 namespace Database\Seeders;
 
 use Agenciafmd\Articles\Models\Category;
-use Illuminate\Database\Seeder;
 use Faker\Factory;
+use Illuminate\Database\Seeder;
 
 class ArticlesCategoriesTableSeeder extends Seeder
 {
-    protected int $total = 20;
+    protected int $total = 10;
 
     public function run()
     {
-        Category::query()
-            ->truncate();
+        Category::withTrashed()
+            ->get()->each->forceDelete();
 
+        if (!config('admix-articles.category')) {
+            return false;
+        }
+
+        if (config('admix-categories.articles-categories.items')) {
+            $this->staticItems();
+
+            return false;
+        }
+
+        $this->factoryItems();
+    }
+
+    private function factoryItems()
+    {
         $this->command->getOutput()
             ->progressStart($this->total);
 
         $faker = Factory::create('pt_BR');
 
         Category::factory($this->total)
-            ->create()            
+            ->create()
             ->each(function ($category) use ($faker) {
                 foreach (config('upload-configs.articles-categories') as $key => $image) {
                     $fakerDir = __DIR__ . '/../faker/articles-categories/' . $key;
@@ -507,29 +707,9 @@ class ArticlesCategoriesTableSeeder extends Seeder
         $this->command->getOutput()
             ->progressFinish();
     }
-}
-```
 
-### Seed sem Factory
-Crie o arquivo `packages/agenciafmd/admix-articles/src/database/seeders/ArticlesCategoriesTableSeeder.php.stub` e adicione
-
-```php
-<?php
-
-namespace Database\Seeders;
-
-use Agenciafmd\Articles\Models\Category;
-use Illuminate\Database\Seeder;
-
-class ArticlesCategoriesTableSeeder extends Seeder
-{
-    protected int $total = 10;
-
-    public function run()
+    private function staticItems()
     {
-        Category::query()
-            ->truncate();
-
         $items = collect(config('admix-categories.articles-categories.items'));
 
         $this->command->getOutput()
