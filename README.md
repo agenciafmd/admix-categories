@@ -10,7 +10,7 @@
 ### Instalação
 
 ```bash
-composer require agenciafmd/admix-categories:v11.x-dev
+composer require agenciafmd/admix-categories:v8.x-dev
 ```
 
 ### Incorporando ao seu pacote
