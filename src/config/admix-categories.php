@@ -4,7 +4,7 @@ return [
 
 ];
 
-//return [
+// return [
 //    '{{ tipos }}' => [
 //        'name' => '{{ Tipos }}',
 //        'icon' => 'icon fe-minus',
@@ -16,4 +16,4 @@ return [
 //            'name',
 //        ]
 //    ]
-//];
+// ];

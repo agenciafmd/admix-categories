@@ -3,12 +3,12 @@
 namespace Agenciafmd\Categories\Providers;
 
 use Agenciafmd\Categories\Models\Category;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         Route::bind('tag', function ($id) {
             return Category::where('type', request()->segment(3))

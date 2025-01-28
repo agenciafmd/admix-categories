@@ -3,6 +3,7 @@
 namespace Agenciafmd\Categories\Models;
 
 use Agenciafmd\Media\Traits\MediaTrait;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
@@ -14,13 +15,13 @@ use Spatie\MediaLibrary\Models\Media;
 
 class Category extends Model implements AuditableContract, HasMedia
 {
-    use SoftDeletes, Auditable, MediaTrait;
+    use Auditable, MediaTrait, SoftDeletes;
 
     protected $guarded = [
         'media',
     ];
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
@@ -29,12 +30,12 @@ class Category extends Model implements AuditableContract, HasMedia
         });
     }
 
-    public function scopeIsActive($query)
+    public function scopeIsActive(Builder $query): void
     {
         $query->where('is_active', 1);
     }
 
-    public function scopeSort($query, $type = 'categories')
+    public function scopeSort(Builder $query, string $type = 'categories'): void
     {
         $sorts = default_sort(config("admix-categories.{$type}.default_sort"));
 
@@ -54,27 +55,27 @@ class Category extends Model implements AuditableContract, HasMedia
         return config("upload-configs.{$this->attributes['type']}");
     }
 
-//    public function registerMediaConversions(Media $media = null)
-//    {
-//        $fields = config('upload-configs.' . $this->attributes['type']);
-//        foreach ($fields as $collection => $field) {
-//            $conversion = $this->addMediaConversion('thumb');
-//            if ($field['crop']) {
-//                $conversion->fit(Manipulations::FIT_CROP, $field['width'], $field['height']);
-//            } else {
-//                $conversion->width($field['width'])
-//                    ->height($field['height']);
-//            }
-//            if (!app()->environment('local')) {
-//                if ($field['optimize']) {
-//                    $conversion->optimize();
-//                }
-//                if ($field['quality']) {
-//                    $conversion->quality($field['quality']);
-//                }
-//            }
-//            $conversion->performOnCollections($collection)
-//                ->keepOriginalImageFormat();
-//        }
-//    }
+    //    public function registerMediaConversions(Media $media = null)
+    //    {
+    //        $fields = config('upload-configs.' . $this->attributes['type']);
+    //        foreach ($fields as $collection => $field) {
+    //            $conversion = $this->addMediaConversion('thumb');
+    //            if ($field['crop']) {
+    //                $conversion->fit(Manipulations::FIT_CROP, $field['width'], $field['height']);
+    //            } else {
+    //                $conversion->width($field['width'])
+    //                    ->height($field['height']);
+    //            }
+    //            if (!app()->environment('local')) {
+    //                if ($field['optimize']) {
+    //                    $conversion->optimize();
+    //                }
+    //                if ($field['quality']) {
+    //                    $conversion->quality($field['quality']);
+    //                }
+    //            }
+    //            $conversion->performOnCollections($collection)
+    //                ->keepOriginalImageFormat();
+    //        }
+    //    }
 }

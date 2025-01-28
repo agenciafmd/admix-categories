@@ -8,7 +8,7 @@ class CategoryRequest extends FormRequest
 {
     protected $errorBag = 'admix';
 
-    public function rules()
+    public function rules(): array
     {
         return [
             'is_active' => [
@@ -32,7 +32,7 @@ class CategoryRequest extends FormRequest
         ];
     }
 
-    public function attributes()
+    public function attributes(): array
     {
         return [
             'is_active' => 'ativo',
@@ -41,7 +41,7 @@ class CategoryRequest extends FormRequest
         ];
     }
 
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }

@@ -7,10 +7,10 @@ use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvid
 class AuthServiceProvider extends ServiceProvider
 {
     protected $policies = [
-//        '\Agenciafmd\{{ Pacotes }}\{{ Tipo }}' => '\Agenciafmd\{{ Pacotes }}\Policies\{{ Tipo }}Policy',
+        //        '\Agenciafmd\{{ Pacotes }}\{{ Tipo }}' => '\Agenciafmd\{{ Pacotes }}\Policies\{{ Tipo }}Policy',
     ];
 
-    public function boot()
+    public function boot(): void
     {
         $this->registerPolicies();
     }

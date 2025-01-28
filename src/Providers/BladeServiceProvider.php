@@ -6,7 +6,7 @@ use Illuminate\Support\ServiceProvider;
 
 class BladeServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         $this->loadViews();
 
@@ -15,22 +15,22 @@ class BladeServiceProvider extends ServiceProvider
         $this->publish();
     }
 
-    public function register()
+    public function register(): void
     {
         //
     }
 
-    protected function loadViews()
+    protected function loadViews(): void
     {
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'agenciafmd/categories');
     }
 
-    protected function loadTranslations()
+    protected function loadTranslations(): void
     {
         $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'agenciafmd/categories');
     }
 
-    protected function publish()
+    protected function publish(): void
     {
         $this->publishes([
             __DIR__ . '/../resources/views' => base_path('resources/views/vendor/agenciafmd/categories'),

@@ -2,20 +2,21 @@
 
 namespace Agenciafmd\Categories\Http\Controllers;
 
-use Agenciafmd\Categories\Models\Category;
 use Agenciafmd\Categories\Http\Requests\CategoryRequest;
+use Agenciafmd\Categories\Models\Category;
 use App\Http\Controllers\Controller;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class CategoryController extends Controller
 {
-    protected $categoryModel;
+    protected ?string $categoryModel;
 
-    protected $categoryType;
+    protected ?string $categoryType;
 
-    protected $categorySlug;
+    protected string $categorySlug;
 
     public function __construct()
     {
@@ -30,7 +31,7 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         session()->put('backUrl', request()->fullUrl());
 
@@ -51,14 +52,14 @@ class CategoryController extends Controller
         return view('agenciafmd/categories::index', $view);
     }
 
-    public function create(Category $category)
+    public function create(Category $category): View
     {
         $view['model'] = $category;
 
         return view('agenciafmd/categories::form', $view);
     }
 
-    public function store(CategoryRequest $request)
+    public function store(CategoryRequest $request): RedirectResponse
     {
         $data = [
             'is_active' => $request->get('is_active'),
@@ -77,21 +78,21 @@ class CategoryController extends Controller
         return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
     }
 
-    public function show(Category $category)
+    public function show(Category $category): View
     {
         $view['model'] = $category;
 
         return view('agenciafmd/categories::form', $view);
     }
 
-    public function edit(Category $category)
+    public function edit(Category $category): View
     {
         $view['model'] = $category;
 
         return view('agenciafmd/categories::form', $view);
     }
 
-    public function update(Category $category, CategoryRequest $request)
+    public function update(Category $category, CategoryRequest $request): RedirectResponse
     {
         $data = [
             'is_active' => $request->get('is_active'),
@@ -110,7 +111,7 @@ class CategoryController extends Controller
         return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
     }
 
-    public function destroy(Category $category)
+    public function destroy(Category $category): RedirectResponse
     {
         if ($category->delete()) {
             flash('Item removido com sucesso.', 'success');
@@ -121,7 +122,7 @@ class CategoryController extends Controller
         return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
     }
 
-    public function restore($id)
+    public function restore($id): RedirectResponse
     {
         $category = Category::onlyTrashed()
             ->where('type', $this->categorySlug)
@@ -138,7 +139,7 @@ class CategoryController extends Controller
         return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
     }
 
-    public function batchDestroy(Request $request)
+    public function batchDestroy(Request $request): RedirectResponse
     {
         if (Category::destroy($request->get('id', []))) {
             flash('Item removido com sucesso.', 'success');
@@ -149,7 +150,7 @@ class CategoryController extends Controller
         return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
     }
 
-    public function batchRestore(Request $request)
+    public function batchRestore(Request $request): RedirectResponse
     {
         $category = Category::onlyTrashed()
             ->whereIn('id', $request->get('id', []))

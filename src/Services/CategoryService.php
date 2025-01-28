@@ -6,7 +6,7 @@ use Agenciafmd\Categories\Models\Category;
 
 class CategoryService
 {
-    public function lists($type)
+    public function lists(string $type)
     {
         return Category::where('type', $type)
             ->isActive()
