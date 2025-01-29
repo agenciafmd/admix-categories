@@ -1,32 +1,32 @@
 {
-    "name": "agenciafmd/admix-categories",
-    "description": "Categorias - Agência F&MD",
-    "homepage": "https://github.com/agenciafmd/admix-categories",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Irineu Junior",
-            "email": "irineu@fmd.ag",
-            "homepage": "https://fmd.ag/",
-            "role": "Developer"
-        }
-    ],
-    "require": {
-        "laravel/framework": "^8.0"
-    },
-    "autoload": {
-        "files": [
-            "src/Http/helpers.php"
-        ],
-        "psr-4": {
-            "Agenciafmd\\Categories\\": "src/"
-        }
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Agenciafmd\\Categories\\Providers\\CategoryServiceProvider"
-            ]
-        }
+  "name": "agenciafmd/local-categories",
+  "description": "Category - Agência F&MD",
+  "authors": [
+    {
+      "name": "João Paulo  dos Santos Ferreira",
+      "email": "joao.paulo@fmd.ag",
+      "homepage": "https://fmd.ag/",
+      "role": "Developer"
     }
+  ],
+  "require": {
+    "laravel/framework": "11.*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Agenciafmd\\Categories\\": "src/",
+      "Agenciafmd\\Categories\\Database\\Factories\\": "database/factories/",
+      "Agenciafmd\\Categories\\Database\\Seeders\\": "database/seeders/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Agenciafmd\\Categories\\Providers\\CategoryServiceProvider"
+      ]
+    }
+  },
+  "config": {
+    "sort-packages": true
+  }
 }

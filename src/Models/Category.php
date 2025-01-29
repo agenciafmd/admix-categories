@@ -2,80 +2,51 @@
 
 namespace Agenciafmd\Categories\Models;
 
-use Agenciafmd\Media\Traits\MediaTrait;
+use Agenciafmd\Admix\Traits\WithScopes;
+use Agenciafmd\Admix\Traits\WithSlug;
+use Agenciafmd\Categories\Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
-use Spatie\Image\Manipulations;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\Models\Media;
 
-class Category extends Model implements AuditableContract, HasMedia
+class Category extends Model implements AuditableContract
 {
-    use Auditable, MediaTrait, SoftDeletes;
+    use Auditable, HasFactory, Prunable, SoftDeletes, WithScopes, WithSlug;
 
     protected $guarded = [
-        'media',
+        //
     ];
 
-    protected static function boot(): void
-    {
-        parent::boot();
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
 
-        static::saving(function ($model) {
-            $model->slug = Str::slug($model->name);
-        });
+    protected array $defaultSort = [
+        'is_active' => 'desc',
+        'name' => 'asc',
+    ];
+
+    public function entries(string $class): MorphToMany
+    {
+        return $this->morphedByMany($class, 'model', 'categorizables', 'model_id', 'category_id');
     }
 
-    public function scopeIsActive(Builder $query): void
+    public function prunable(): Builder
     {
-        $query->where('is_active', 1);
+        return self::where('deleted_at', '<=', now()->subYear());
     }
 
-    public function scopeSort(Builder $query, string $type = 'categories'): void
+    protected static function newFactory(): CategoryFactory|\Database\Factories\CategoryFactory
     {
-        $sorts = default_sort(config("admix-categories.{$type}.default_sort"));
-
-        foreach ($sorts as $sort) {
-            if ($sort['field'] === 'sort') {
-                $query->orderByRaw('ISNULL(sort), sort ASC');
-            } else {
-                $query->orderBy($sort['field'], $sort['direction']);
-            }
+        if (class_exists(\Database\Factories\CategoryFactory::class)) {
+            return \Database\Factories\CategoryFactory::new();
         }
+
+        return CategoryFactory::new();
     }
-
-    public $registerMediaConversionsUsingModelInstance = true;
-
-    public function fieldsToConversion()
-    {
-        return config("upload-configs.{$this->attributes['type']}");
-    }
-
-    //    public function registerMediaConversions(Media $media = null)
-    //    {
-    //        $fields = config('upload-configs.' . $this->attributes['type']);
-    //        foreach ($fields as $collection => $field) {
-    //            $conversion = $this->addMediaConversion('thumb');
-    //            if ($field['crop']) {
-    //                $conversion->fit(Manipulations::FIT_CROP, $field['width'], $field['height']);
-    //            } else {
-    //                $conversion->width($field['width'])
-    //                    ->height($field['height']);
-    //            }
-    //            if (!app()->environment('local')) {
-    //                if ($field['optimize']) {
-    //                    $conversion->optimize();
-    //                }
-    //                if ($field['quality']) {
-    //                    $conversion->quality($field['quality']);
-    //                }
-    //            }
-    //            $conversion->performOnCollections($collection)
-    //                ->keepOriginalImageFormat();
-    //        }
-    //    }
 }
