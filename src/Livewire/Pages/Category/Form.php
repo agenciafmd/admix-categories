@@ -16,9 +16,6 @@ class Form extends LivewireForm
     #[Validate]
     public string $name = '';
 
-    #[Validate]
-    public ?string $description = null;
-
     public function setModel(Category $category): void
     {
         $this->category = $category;
