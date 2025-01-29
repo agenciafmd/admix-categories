@@ -9,7 +9,7 @@ trait Categorizable
 {
     public function categories(): MorphToMany
     {
-        return $this->morphToMany(Category::class, 'model', 'categorizables', 'model_id', 'category_id')
+        return $this->morphToMany(Category::class, 'model', 'categorizables')
             ->withTimestamps();
     }
 

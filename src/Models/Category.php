@@ -33,7 +33,7 @@ class Category extends Model implements AuditableContract
 
     public function entries(string $class): MorphToMany
     {
-        return $this->morphedByMany($class, 'model', 'categorizables', 'model_id', 'category_id');
+        return $this->morphedByMany($class, 'model', 'categorizables');
     }
 
     public function prunable(): Builder
