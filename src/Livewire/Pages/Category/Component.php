@@ -48,7 +48,7 @@ class Component extends LivewireComponent
 
     public function render(): View
     {
-        return view('local-categories::pages.category.form')
+        return view('admix-categories::pages.category.form')
             ->extends('admix::internal')
             ->section('internal-content');
     }

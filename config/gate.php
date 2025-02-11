@@ -4,7 +4,7 @@ use Agenciafmd\Categories\Policies\CategoryPolicy;
 
 return [
     [
-        'name' => config('local-categories.name'),
+        'name' => config('admix-categories.name'),
         'policy' => CategoryPolicy::class,
         'abilities' => [
             [

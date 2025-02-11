@@ -1,32 +1,33 @@
 {
-  "name": "agenciafmd/local-categories",
-  "description": "Category - Agência F&MD",
-  "authors": [
-    {
-      "name": "João Paulo  dos Santos Ferreira",
-      "email": "joao.paulo@fmd.ag",
-      "homepage": "https://fmd.ag/",
-      "role": "Developer"
+    "name": "agenciafmd/admix-categories",
+    "description": "Categorias - Agência F&MD",
+    "authors": [
+        {
+            "name": "João Paulo  dos Santos Ferreira",
+            "email": "joao.paulo@fmd.ag",
+            "homepage": "https://fmd.ag/",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "laravel/framework": "11.*",
+        "spatie/laravel-tags": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Agenciafmd\\Categories\\": "src/",
+            "Agenciafmd\\Categories\\Database\\Factories\\": "database/factories/",
+            "Agenciafmd\\Categories\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Agenciafmd\\Categories\\Providers\\CategoryServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
     }
-  ],
-  "require": {
-    "laravel/framework": "11.*"
-  },
-  "autoload": {
-    "psr-4": {
-      "Agenciafmd\\Categories\\": "src/",
-      "Agenciafmd\\Categories\\Database\\Factories\\": "database/factories/",
-      "Agenciafmd\\Categories\\Database\\Seeders\\": "database/seeders/"
-    }
-  },
-  "extra": {
-    "laravel": {
-      "providers": [
-        "Agenciafmd\\Categories\\Providers\\CategoryServiceProvider"
-      ]
-    }
-  },
-  "config": {
-    "sort-packages": true
-  }
 }

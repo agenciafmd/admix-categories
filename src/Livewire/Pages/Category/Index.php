@@ -19,7 +19,7 @@ class Index extends BaseIndex
 
     public function configure(): void
     {
-        $this->packageName = __(config('local-categories.name'));
+        $this->packageName = __(config('admix-categories.name'));
 
         parent::configure();
     }

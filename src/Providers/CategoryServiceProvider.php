@@ -39,15 +39,15 @@ class CategoryServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/../../config' => base_path('config'),
-        ], 'local-categories:config');
+        ], 'admix-categories:config');
 
         $this->publishes([
             __DIR__ . '/../../database/seeders/CategoryTableSeeder.php' => base_path('database/seeders/CategoryTableSeeder.php'),
-        ], 'local-categories:seeders');
+        ], 'admix-categories:seeders');
 
         $this->publishes([
             __DIR__ . '/../../lang/pt_BR' => lang_path('pt_BR'),
-        ], ['local-categories:translations', 'admix-translations']);
+        ], ['admix-categories:translations', 'admix-translations']);
     }
 
     private function setObservers(): void
@@ -62,13 +62,13 @@ class CategoryServiceProvider extends ServiceProvider
 
     private function loadTranslations(): void
     {
-        $this->loadTranslationsFrom(__DIR__ . '/../../lang', 'local-categories');
+        $this->loadTranslationsFrom(__DIR__ . '/../../lang', 'admix-categories');
         $this->loadJsonTranslationsFrom(__DIR__ . '/../../lang');
     }
 
     private function loadConfigs(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../../config/local-categories.php', 'local-categories');
+        $this->mergeConfigFrom(__DIR__ . '/../../config/admix-categories.php', 'admix-categories');
         $this->mergeConfigFrom(__DIR__ . '/../../config/audit-alias.php', 'audit-alias');
     }
 }

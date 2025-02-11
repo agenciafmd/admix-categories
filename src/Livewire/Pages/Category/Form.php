@@ -41,8 +41,8 @@ class Form extends LivewireForm
     public function validationAttributes(): array
     {
         return [
-            'is_active' => __('local-categories::fields.is_active'),
-            'name' => __('local-categories::fields.name'),
+            'is_active' => __('admix-categories::fields.is_active'),
+            'name' => __('admix-categories::fields.name'),
         ];
     }
 

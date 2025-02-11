@@ -2,7 +2,6 @@
 
 namespace Agenciafmd\Categories\Providers;
 
-use Agenciafmd\Categories\Http\Components\Search;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
@@ -35,7 +34,7 @@ class BladeServiceProvider extends ServiceProvider
 
     private function loadBladeComponents(): void
     {
-        Blade::componentNamespace('Agenciafmd\\Categories\\Http\\Components', 'local-categories');
+        Blade::componentNamespace('Agenciafmd\\Categories\\Http\\Components', 'admix-categories');
     }
 
     private function loadBladeComposers(): void
@@ -51,21 +50,21 @@ class BladeServiceProvider extends ServiceProvider
     private function setMenu(): void
     {
         $this->app->make('admix-menu')
-            ->push((object)[
-                'component' => 'local-categories::aside.category',
-                'ord' => config('local-categories.sort'),
+            ->push((object) [
+                'component' => 'admix-categories::aside.category',
+                'ord' => config('admix-categories.sort'),
             ]);
     }
 
     private function loadViews(): void
     {
-        $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'local-categories');
+        $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'admix-categories');
     }
 
     private function publish(): void
     {
         // $this->publishes([
         //     __DIR__ . '/../resources/views' => base_path('resources/views/vendor/agenciafmd/categories'),
-        // ], 'local-categories:views');
+        // ], 'admix-categories:views');
     }
 }

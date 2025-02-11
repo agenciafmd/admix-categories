@@ -1,9 +1,9 @@
 <x-page.form
-        title="{{ $category->exists ? __('Update :name', ['name' => __(config('local-categories.name'))]) : __('Create :name', ['name' => __(config('local-categories.name'))]) }}">
+        title="{{ $category->exists ? __('Update :name', ['name' => __(config('admix-categories.name'))]) : __('Create :name', ['name' => __(config('admix-categories.name'))]) }}">
     <div class="row">
         <div class="col-md-6 mb-3">
             <x-form.label for="form.is_active">
-                {{ str(__('local-categories::fields.is_active'))->ucfirst() }}
+                {{ str(__('admix-categories::fields.is_active'))->ucfirst() }}
             </x-form.label>
             <x-form.toggle name="form.is_active"
                            :large="true"
@@ -16,7 +16,7 @@
     </div>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <x-form.input name="form.name" :label="__('local-categories::fields.name')"/>
+            <x-form.input name="form.name" :label="__('admix-categories::fields.name')"/>
         </div>
         <div class="col-md-6 mb-3">
         </div>
