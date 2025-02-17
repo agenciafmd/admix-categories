@@ -10,8 +10,7 @@
         }
     ],
     "require": {
-        "laravel/framework": "11.*",
-        "spatie/laravel-tags": "^4.0"
+        "laravel/framework": "11.*"
     },
     "autoload": {
         "psr-4": {
@@ -24,7 +23,10 @@
         "laravel": {
             "providers": [
                 "Agenciafmd\\Categories\\Providers\\CategoryServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "Helper": "\\Facades\\Agenciafmd\\Categories\\Helper"
+            }
         }
     },
     "config": {

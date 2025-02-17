@@ -4,16 +4,20 @@ namespace Agenciafmd\Categories\Models;
 
 use Agenciafmd\Admix\Traits\WithScopes;
 use Agenciafmd\Admix\Traits\WithSlug;
-use Agenciafmd\Categories\Database\Factories\CategoryFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Agenciafmd\Categories\Database\Factories\CategoryFactory;
+use Agenciafmd\Categories\Observers\CategoryObserver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
+#[ObservedBy([CategoryObserver::class])]
 class Category extends Model implements AuditableContract
 {
     use Auditable, HasFactory, Prunable, SoftDeletes, WithScopes, WithSlug;
@@ -22,18 +26,16 @@ class Category extends Model implements AuditableContract
         //
     ];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-    ];
-
     protected array $defaultSort = [
         'is_active' => 'desc',
         'name' => 'asc',
     ];
 
-    public function entries(string $class): MorphToMany
+    protected function casts(): array
     {
-        return $this->morphedByMany($class, 'model', 'categorizables');
+        return [
+            'is_active' => 'boolean',
+        ];
     }
 
     public function prunable(): Builder

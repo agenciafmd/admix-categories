@@ -19,7 +19,10 @@ class Category extends Component
     {
         $this->icon = __(config('admix-categories.icon'));
         $this->label = __(config('admix-categories.name'));
-        $this->url = route('admix.categories.index');
+        $this->url = route('admix.categories.index', [
+            'categoryModel' => 'products',
+            'categoryType' => 'categories',
+        ]);
         $this->active = request()?->currentRouteNameStartsWith('admix.categories');
         $this->visible = true;
 

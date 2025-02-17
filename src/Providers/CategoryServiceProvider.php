@@ -2,8 +2,6 @@
 
 namespace Agenciafmd\Categories\Providers;
 
-use Agenciafmd\Categories\Models\Category;
-use Agenciafmd\Categories\Observers\CategoryObserver;
 use Illuminate\Support\ServiceProvider;
 
 class CategoryServiceProvider extends ServiceProvider
@@ -11,8 +9,6 @@ class CategoryServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->providers();
-
-        $this->setObservers();
 
         $this->loadMigrations();
 
@@ -38,7 +34,7 @@ class CategoryServiceProvider extends ServiceProvider
     private function publish(): void
     {
         $this->publishes([
-            __DIR__ . '/../../config' => base_path('config'),
+            __DIR__ . '/../../config/admix-categories.php' => base_path('config/admix-categories.php'),
         ], 'admix-categories:config');
 
         $this->publishes([
@@ -48,11 +44,6 @@ class CategoryServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../../lang/pt_BR' => lang_path('pt_BR'),
         ], ['admix-categories:translations', 'admix-translations']);
-    }
-
-    private function setObservers(): void
-    {
-        Category::observe(CategoryObserver::class);
     }
 
     private function loadMigrations(): void

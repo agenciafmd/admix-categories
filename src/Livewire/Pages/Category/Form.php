@@ -10,15 +10,21 @@ class Form extends LivewireForm
 {
     public Category $category;
 
+    public $model;
+
+    public $type;
+
     #[Validate]
     public bool $is_active = true;
 
     #[Validate]
     public string $name = '';
 
-    public function setModel(Category $category): void
+    public function setModel(Category $category, mixed $model, string $type): void
     {
         $this->category = $category;
+        $this->model = $model;
+        $this->type = $type;
         if ($category->exists) {
             $this->is_active = $category->is_active;
             $this->name = $category->name;

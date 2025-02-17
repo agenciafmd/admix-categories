@@ -2,6 +2,7 @@
 
 namespace Agenciafmd\Categories\Livewire\Pages\Category;
 
+use Agenciafmd\Categories\Helper;
 use Agenciafmd\Categories\Models\Category;
 use Exception;
 use Illuminate\Contracts\View\View;
@@ -24,7 +25,9 @@ class Component extends LivewireComponent
         ($category->exists) ? $this->authorize('update', Category::class) : $this->authorize('create', Category::class);
 
         $this->category = $category;
-        $this->form->setModel($category);
+        $model = Helper::parseModel(request()->categoryModel);
+        $type = request()->categoryType;
+        $this->form->setModel($category, $model, $type);
     }
 
     public function submit(): null|Redirector|RedirectResponse

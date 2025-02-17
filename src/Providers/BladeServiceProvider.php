@@ -9,9 +9,6 @@ class BladeServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-
-        $prefix = config('admix-ui.prefix');
-
         $this->loadBladeComponents();
 
         $this->loadBladeDirectives();
@@ -23,8 +20,6 @@ class BladeServiceProvider extends ServiceProvider
         $this->loadViews();
 
         $this->publish();
-
-        Blade::component($prefix . 'form.input-search', Search::class);
     }
 
     public function register(): void
@@ -49,11 +44,11 @@ class BladeServiceProvider extends ServiceProvider
 
     private function setMenu(): void
     {
-        $this->app->make('admix-menu')
-            ->push((object) [
-                'component' => 'admix-categories::aside.category',
-                'ord' => config('admix-categories.sort'),
-            ]);
+        //        $this->app->make('admix-menu')
+        //            ->push((object)[
+        //                'component' => 'admix-categories::aside.category',
+        //                'ord' => config('admix-categories.sort'),
+        //            ]);
     }
 
     private function loadViews(): void

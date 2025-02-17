@@ -3,6 +3,7 @@
 namespace Agenciafmd\Categories\Providers;
 
 use Agenciafmd\Admix\Http\Middleware\Authenticate;
+use Agenciafmd\Categories\Helper;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,7 @@ class RouteServiceProvider extends ServiceProvider
 
     private function loadBindings(): void
     {
-        //
+        $allowedTypes = Helper::allowedTypes();
+        Route::pattern('categoryType', '(' . implode('|', $allowedTypes) . ')');
     }
 }

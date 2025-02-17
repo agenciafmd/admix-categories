@@ -1,6 +1,6 @@
 ## F&MD - Categories
 
-![Área Administrativa](https://github.com/agenciafmd/admix-categories/raw/master/docs/screenshot.png "Área Administrativa")
+![Área Administrativa](https://raw.githubusercontent.com/agenciafmd/admix-categories/v11/docs/screenshot.png "Área Administrativa")
 
 [![Downloads](https://img.shields.io/packagist/dt/agenciafmd/admix-categories.svg?style=flat-square)](https://packagist.org/packages/agenciafmd/admix-categories)
 [![Licença](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
@@ -10,119 +10,65 @@
 ### Instalação
 
 ```bash
-composer require agenciafmd/admix-categories:v8.x-dev
-```
-
-### Incorporando ao seu pacote
-
-Vamos usar o pacote **[admix-articles](https://github.com/agenciafmd/admix-articles)** como exemplo 
-
-### Migrações
-
-Podemos criar a migração caso o pacote já esteja em uso ou adicionamos a linha no nosso pacote novinho
-
-Ex. `packages/agenciafmd/admix-articles/src/database/migrations/0000_00_00_000000_add_category_id_field_on_articles_table`
-```php
-<?php
-
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Migrations\Migration;
-
-class AddCategoryIdFieldOnArticlesTable extends Migration
-{
-    public function up()
-    {
-        Schema::table('articles', function (Blueprint $table) {
-            $table->integer('category_id')->default(0);
-        });
-    }
-
-    public function down()
-    {
-        Schema::table('articles', function (Blueprint $table) {
-            $table->dropColumn('category_id');
-        });
-    }
-}
+composer require agenciafmd/admix-categories:v11.x-dev
 ```
 
 ### Configurações
 
-Ao criarmos o arquivo de configuração, precisamos ter em mente, que o indice será composto de `model pai no plural - model filha no plural`
+Publique o arquivo de configuração
 
-No caminho `packages/agenciafmd/admix-articles/src/config/`, crie os arquivos abaixo
+```
+php artisan vendor:publish --tag="admix-categories:config"
+```
 
-**admix-categories.php**
+No arquivo `config/admix-categories.php` adicione as categorias que serão utilizadas.
+
+Os slugs são utilizados para identificar as categorias na rota.
+
 ```php
 <?php
 
 return [
-    'articles-categories' => [
-        'name' => 'Categorias',
-        'icon' => 'icon fe-minus',
-        'star' => false,
-        'description' => false,
-        'sort' => 20,
-        'default_sort' => [
-            '-is_active',
-            'sort',
-            'name',
-        ],
-        // caso seja necessário, utilize o campo abaixo para o seed
-        //'items' => [ 
-        //    'Coletores',
-        //    'Pré-Coletores',
-        //    'Transferências de Calor e Massa',
-        //],
-    ]
-];
-```
-
-**upload-configs.php**
-```
-<?php
-
-return [
-    ...
-    'articles-categories' => [
-        'image' => [ //nome do campo
-            'label' => 'imagem', //label do campo
-            'multiple' => false, //se permite o upload multiplo
-            'faker_dir' => false, #database_path('faker/articles-categories/image'),
-            'sources' => [
+    'name' => 'Categories',
+    'icon' => 'category',
+    'sort' => 100,
+    'categories' => [
+        [
+            'model' => \Agenciafmd\Articles\Models\Article::class,
+            'name' => 'Artigos',
+            'slug' => 'articles',
+            'types' => [
                 [
-                    'conversion' => 'min-width-1366',
-                    'media' => '(min-width: 1366px)',
-                    'width' => 1024, // 16:9
-                    'height' => 576,
+                    'name' => 'Categorias',
+                    'slug' => 'categories',
                 ],
-                [
-                    'conversion' => 'min-width-1280',
-                    'media' => '(min-width: 1280px)',
-                    'width' => 776,
-                    'height' => 437,
-                ],
+                // adicione quantos tipos forem necessários
             ],
         ],
-        ...
+        // adicione quantas models forem necessários
     ],
 ];
 ```
 
-Carregue os arquivos em `/packages/agenciafmd/admix-articles/src/Providers/ArticlesServiceProvider.php`
+### Incorporando ao seu pacote
+
+Vamos usar o pacote **[admix-articles](https://github.com/agenciafmd/admix-articles)** como exemplo
+
+Mova o arquivo `/config/admix-categories.php` e para `/packages/agenciafmd/admix-articles/config/admix-categories.php`
+
+Carregue os arquivos em `/packages/agenciafmd/admix-articles/src/Providers/ArticleServiceProvider.php`
 
 ```php
 protected function loadConfigs()
 {
     ...
     $this->mergeConfigFrom(__DIR__ . '/../config/admix-categories.php', 'admix-categories');
-    $this->mergeConfigFrom(__DIR__ . '/../config/upload-configs.php', 'upload-configs');
 }
 ```
 
-### Permissões
+### Permissões (TODO)
 
-No arquivo `packages/agenciafmd/admix-articles/src/config/gate.php` adicione antes das configurações do pacote
+No arquivo `packages/agenciafmd/admix-articles/config/gate.php` adicione antes das configurações do pacote
 
 ```php
 [
@@ -154,7 +100,7 @@ No arquivo `packages/agenciafmd/admix-articles/src/config/gate.php` adicione ant
 ],
 ```
 
-### Validação
+### Validação (TODO)
 
 No arquivo `packages/agenciafmd/admix-articles/src/Http/Requests/ArticleRequest.php` adicione
 
@@ -181,7 +127,7 @@ public function attributes()
 }
 ```
 
-### Politicas
+### Politicas (TODO)
 
 Crie o arquivo `packages/agenciafmd/admix-articles/src/Policies/CategoryPolicy.php`
 
@@ -198,7 +144,7 @@ class CategoryPolicy extends AdmixPolicy
 }
 ```
 
-### Registrando as politicas
+### Registrando as politicas (TODO)
 
 No arquivo `packages/agenciafmd/admix-articles/src/Providers/AuthServiceProviders.php` adicione
 
@@ -216,60 +162,65 @@ protected $policies = [
 
 ### Menu
 
-No arquivo `packages/agenciafmd/admix-articles/src/resources/views/partials/menus/item.blade.php` faça as correções
+No arquivo `packages/agenciafmd/admix-articles/src/Http/Components/Aside/Article.php` modifique a estrutura para aceitar
+as categorias
 
 ```blade
-@can('view', [
-    \Agenciafmd\Articles\Models\Category::class,
-    \Agenciafmd\Articles\Models\Article::class,
-])
-    <li class="nav-item">
-        <a class="nav-link {{ (Str::startsWith(request()->route()->getName(), 'admix.articles')) ? 'active' : '' }}"
-           href="#sidebar-articles" data-toggle="collapse" data-parent="#menu" role="button"
-           aria-expanded="{{ (Str::startsWith(request()->route()->getName(), 'admix.articles')) ? 'true' : 'false' }}">
-            <span class="nav-icon">
-                <i class="icon {{ config('admix-articles.icon') }}"></i>
-            </span>
-            <span class="nav-text">
-                {{ config('admix-articles.name') }}
-            </span>
-        </a>
-        <div class="navbar-subnav collapse {{ (Str::startsWith(request()->route()->getName(), 'admix.articles')) ? 'show' : '' }}"
-             id="sidebar-articles">
-            <ul class="nav">
-                @can('view', \Agenciafmd\Articles\Models\Category::class)
-                    <li class="nav-item">
-                        <a class="nav-link {{ (Str::startsWith(request()->route()->getName(), 'admix.articles.categories')) ? 'active' : '' }}"
-                           href="{{ route('admix.articles.categories.index') }}">
-                            <span class="nav-icon">
-                                <i class="icon fe-minus"></i>
-                            </span>
-                            <span class="nav-text">
-                                {{ config('admix-categories.articles-categories.name') }}
-                            </span>
-                        </a>
-                    </li>
-                @endcan
-                @can('view', \Agenciafmd\Articles\Models\Article::class)
-                    <li class="nav-item">
-                        <a class="nav-link {{ (Str::startsWith(request()->route()->getName(), 'admix.articles') && !Str::startsWith(request()->route()->getName(), 'admix.articles.categories')) ? 'active' : '' }}"
-                           href="{{ route('admix.articles.index') }}">
-                            <span class="nav-icon">
-                                <i class="icon fe-minus"></i>
-                            </span>
-                            <span class="nav-text">
-                                {{ config('admix-articles.name') }}
-                            </span>
-                        </a>
-                    </li>
-                @endcan
-            </ul>
-        </div>
-    </li>
-@endif
+<?php
+
+namespace Agenciafmd\Products\Http\Components\Aside;
+
+use Illuminate\Contracts\View\View;
+use Illuminate\View\Component;
+
+class Product extends Component
+{
+    public function __construct(
+        public string $icon = '',
+        public string $label = '',
+        public bool $active = false,
+        public bool $visible = false,
+        public array $children = [],
+    ) {}
+
+    public function render(): View
+    {
+        $model = 'products';
+        $types = collect(config('admix-categories.categories'))
+            ->where('slug', $model)->first()['types'];
+        $children = collect($types)->map(function ($item) use ($model) {
+            return [
+                'label' => __($item['name']),
+                'url' => route('admix.categories.index', [
+                    'categoryModel' => $model,
+                    'categoryType' => $item['slug'],
+                ]),
+                'active' => request()?->is("*{$model}/{$item['slug']}*"),
+                'visible' => true,
+            ];
+        })->toArray();
+
+        $this->icon = __(config('local-products.icon'));
+        $this->label = __(config('local-products.name'));
+        $this->active = request()?->currentRouteNameStartsWith(['admix.products']) || (request()->categoryModel === $model);
+        $this->visible = true;
+
+        $this->children = [
+            ...$children,
+            [
+                'label' => __(config('local-products.name')),
+                'url' => route('admix.products.index'),
+                'active' => request()?->currentRouteNameStartsWith('admix.products'),
+                'visible' => true,
+            ],
+        ];
+
+        return view('admix::components.aside.dropdown');
+    }
+}
 ```
 
-### Listagem
+### Listagem (TODO)
 
 No arquivo `packages/agenciafmd/admix-articles/src/resources/views/index.blade.php` adicione na `@section('filters')`
 
@@ -281,7 +232,7 @@ No arquivo `packages/agenciafmd/admix-articles/src/resources/views/index.blade.p
 ])
 ```
 
-### Formulário
+### Formulário (TODO)
 
 No arquivo `packages/agenciafmd/admix-articles/src/resources/views/form.blade.php` adicione
 
@@ -294,7 +245,7 @@ No arquivo `packages/agenciafmd/admix-articles/src/resources/views/form.blade.ph
 ])
 ```
 
-### Request
+### Request (TODO)
 
 Crie o arquivo `packages/agenciafmd/admix-articles/src/Http/Requests/CategoryRequest.php`
 
@@ -311,7 +262,7 @@ class CategoryRequest extends BaseCategoryRequest
 }
 ```
 
-### Controller
+### Controller (TODO)
 
 Crie o arquivo `packages/agenciafmd/admix-articles/src/Http/Controllers/CategoryController.php`
 
@@ -481,7 +432,7 @@ class CategoryController extends Controller
 }
 ```
 
-### Rotas
+### Rotas (TODO)
 
 No arquivo `packages/agenciafmd/admix-articles/src/routes/web.php` e adicione **antes** das rotas do pacote
 
@@ -526,7 +477,8 @@ if (config('admix-articles.category')) {
 }
 ```
 
-### Model
+### Model (TODO)
+
 Crie o arquivo `packages/agenciafmd/admix-articles/src/Models/Category.php` e adicione
 
 ```php
@@ -597,7 +549,8 @@ class Category extends CategoryBase implements Searchable
 }
 ```
 
-### Relacionamento
+### Relacionamento (TODO)
+
 No arquivo `packages/agenciafmd/admix-articles/src/Models/Article.php` adicione
 
 ```php
@@ -611,7 +564,8 @@ public function category()
 }
 ```
 
-### Factory
+### Factory (TODO)
+
 Crie o arquivo `packages/agenciafmd/admix-articles/src/database/factories/ArticleCategoryFactory.php.stub` e adicione
 
 ```php
@@ -637,7 +591,8 @@ class ArticleCategoryFactory extends Factory
 }
 ```
 
-### Seed
+### Seed (TODO)
+
 Crie o arquivo `packages/agenciafmd/admix-articles/src/database/seeds/ArticlesCategoriesTableSeeder.php.stub` e adicione
 
 ```php
@@ -731,7 +686,7 @@ class ArticlesCategoriesTableSeeder extends Seeder
 }
 ```
 
-### Seed na ArticleFactory
+### Seed na ArticleFactory (TODO)
 
 ```
 ...

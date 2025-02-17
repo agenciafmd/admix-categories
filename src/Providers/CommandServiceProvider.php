@@ -2,9 +2,11 @@
 
 namespace Agenciafmd\Categories\Providers;
 
-use Agenciafmd\Categories\Models\Category;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
+use Agenciafmd\Categories\Models\Category;
 
 class CommandServiceProvider extends ServiceProvider
 {
