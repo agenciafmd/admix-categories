@@ -2,6 +2,7 @@
 
 namespace Agenciafmd\Categories\Providers;
 
+use Agenciafmd\Categories\View\Components;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,7 +30,8 @@ class BladeServiceProvider extends ServiceProvider
 
     private function loadBladeComponents(): void
     {
-        Blade::componentNamespace('Agenciafmd\\Categories\\Http\\Components', 'admix-categories');
+        Blade::componentNamespace('Agenciafmd\\Categories\\View\\Components', 'admix-categories');
+        Blade::component('categories::form.select', Components\Forms\Inputs\Select::class);
     }
 
     private function loadBladeComposers(): void

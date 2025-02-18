@@ -61,7 +61,6 @@ Carregue os arquivos em `/packages/agenciafmd/admix-articles/src/Providers/Artic
 ```php
 protected function loadConfigs()
 {
-    ...
     $this->mergeConfigFrom(__DIR__ . '/../config/admix-categories.php', 'admix-categories');
 }
 ```
@@ -100,31 +99,81 @@ No arquivo `packages/agenciafmd/admix-articles/config/gate.php` adicione antes d
 ],
 ```
 
-### Validação (TODO)
+### Preparando o formulário
 
-No arquivo `packages/agenciafmd/admix-articles/src/Http/Requests/ArticleRequest.php` adicione
+No arquivo `packages/agenciafmd/admix-articles/src/Livewire/Pages/Article/Form.php`
 
+Declare o campo, usando o valor que temos no `type` no **singular** para "hasOne" e no **plural** para "hasMany".
+
+Vamos usar `category` para o `hasOne` e `tags` para o `hasMany`
+
+```php
+#[Validate]
+public int $category = 0;
+
+#[Validate]
+public array $tags = [];
 ```
-public function rules()
+
+Alimente os campos no método `setModel()`
+
+```php
+public function setModel(Article $article): void
 {
-    return [
-        ...
-        'category_id' => [
-            'required',
-            'integer',
-        ],
-        ...
-    ];
+    $this->article = $article;
+    if ($article->exists) {
+        //...
+        $this->category = $article
+            ->loadCategory()
+            ?->id ?? 0;
+        $this->tags = $article
+            ->loadCategories('tags')
+            ->pluck('id')
+            ->toArray();
+    }
+}
+```
+
+Valide os campos no método `rules()`
+
+```php
+'category' => [
+    'required',
+    'integer',
+    Rule::exists('categories', 'id')
+        ->where(function (Builder $builder) {
+            $builder->where('model', Article::class)
+                ->where('type', 'categories');
+        }),
+],
+'tags' => [
+    'required',
+    'array',
+    Rule::exists('categories', 'id')
+        ->where(function (Builder $builder) {
+        $builder->where('model', Article::class)
+            ->where('type', 'tags');
+    }),
+],
+```
+
+Adicione os campos no método `validationAttributes()`
+
+```php
+'category' => __('admix-articles::fields.category'),
+'tags' => __('admix-articles::fields.tags'),
+```
+
+Faça o sync no método `save()`
+
+```php
+if (!$this->article->exists) {
+    $this->article->save();
 }
 
-public function attributes()
-{
-    return [
-        ...
-        'category_id' => 'categoria',
-        ...
-    ];
-}
+$this->article->syncCategories([$this->category, ...$this->tags]);
+
+return $this->article->save();
 ```
 
 ### Politicas (TODO)
@@ -185,7 +234,7 @@ class Product extends Component
 
     public function render(): View
     {
-        $model = 'products';
+        $model = 'articles';
         $types = collect(config('admix-categories.categories'))
             ->where('slug', $model)->first()['types'];
         $children = collect($types)->map(function ($item) use ($model) {
@@ -200,17 +249,17 @@ class Product extends Component
             ];
         })->toArray();
 
-        $this->icon = __(config('local-products.icon'));
-        $this->label = __(config('local-products.name'));
-        $this->active = request()?->currentRouteNameStartsWith(['admix.products']) || (request()->categoryModel === $model);
+        $this->icon = __(config('admix-articles.icon'));
+        $this->label = __(config('admix-articles.name'));
+        $this->active = request()?->currentRouteNameStartsWith(['admix.articles']) || (request()->categoryModel === $model);
         $this->visible = true;
 
         $this->children = [
             ...$children,
             [
-                'label' => __(config('local-products.name')),
-                'url' => route('admix.products.index'),
-                'active' => request()?->currentRouteNameStartsWith('admix.products'),
+                'label' => __(config('admix-articles.name')),
+                'url' => route('admix.articles.index'),
+                'active' => request()?->currentRouteNameStartsWith('admix.articles'),
                 'visible' => true,
             ],
         ];
@@ -232,335 +281,42 @@ No arquivo `packages/agenciafmd/admix-articles/src/resources/views/index.blade.p
 ])
 ```
 
-### Formulário (TODO)
+### Formulário
 
-No arquivo `packages/agenciafmd/admix-articles/src/resources/views/form.blade.php` adicione
+No arquivo `packages/agenciafmd/admix-articles/resources/views/pages/article/form.blade.php` use o componente
+`<x-categories::form.select .../>`
 
 ```blade
-@include('agenciafmd/categories::partials.form.select', [
-    'label' => config('admix-categories.articles-categories.name'),
-    'type' => 'articles-categories',
-    'name' => 'category_id',
-    'required' => true
-])
+<div class="col-md-6 mb-3">
+    <x-categories::form.select
+            name="form.category"
+            :label="__('admix-categories::fields.category')"
+            :model=\Agenciafmd\Articles\Models\Article::class
+    />
+</div>
+<div class="col-md-6 mb-3">
+    <x-categories::form.select
+            name="form.tags"
+            :label="__('admix-categories::fields.tags')"
+            :model=\Agenciafmd\Articles\Models\Article::class
+            type="tags"
+            multiple
+    />
+</div>
 ```
 
-### Request (TODO)
+### Model
 
-Crie o arquivo `packages/agenciafmd/admix-articles/src/Http/Requests/CategoryRequest.php`
+No arquivo `packages/agenciafmd/admix-articles/src/Models/Article.php` e adicione
 
 ```php
 <?php
 
-namespace Agenciafmd\Articles\Http\Requests;
+use Agenciafmd\Categories\Traits\WithCategories;
 
-use Agenciafmd\Categories\Http\Requests\CategoryRequest as BaseCategoryRequest;
-
-class CategoryRequest extends BaseCategoryRequest
+class Article extends Model
 {
-    //
-}
-```
-
-### Controller (TODO)
-
-Crie o arquivo `packages/agenciafmd/admix-articles/src/Http/Controllers/CategoryController.php`
-
-```php
-<?php
-
-namespace Agenciafmd\Articles\Http\Controllers;
-
-use Agenciafmd\Articles\Models\Category;
-use Agenciafmd\Articles\Http\Requests\CategoryRequest;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Spatie\QueryBuilder\QueryBuilder;
-
-class CategoryController extends Controller
-{
-    protected $categoryModel;
-
-    protected $categoryType;
-
-    protected $categorySlug;
-
-    public function __construct()
-    {
-        $this->categoryModel = request()->segment(2);
-        $this->categoryType = request()->segment(3);
-        $this->categorySlug = $this->categoryModel . '-' . $this->categoryType;
-
-        view()->share([
-            'categoryModel' => $this->categoryModel,
-            'categoryType' => $this->categoryType,
-            'categorySlug' => $this->categorySlug,
-        ]);
-    }
-
-    public function index(Request $request)
-    {
-        session()->put('backUrl', request()->fullUrl());
-
-        $query = QueryBuilder::for(Category::query());
-        if (!$request->sort) {
-            $query->sort($this->categorySlug);
-        }
-        $query->defaultSorts(config("admix-categories.{$this->categorySlug}.default_sort"))
-            ->allowedSorts($request->sort)
-            ->allowedFilters((($request->filter) ? array_keys($request->get('filter')) : []));
-
-        if ($request->is('*/trash')) {
-            $query->onlyTrashed();
-        }
-
-        $view['items'] = $query->paginate($request->get('per_page', 50));
-
-        return view('agenciafmd/categories::index', $view);
-    }
-
-    public function create(Category $category)
-    {
-        $view['model'] = $category;
-
-        return view('agenciafmd/categories::form', $view);
-    }
-
-    public function store(CategoryRequest $request)
-    {
-        $data = [
-            'is_active' => $request->get('is_active'),
-            'name' => $request->get('name'),
-            'description' => $request->get('description', ''),
-            'sort' => $request->sort ?? null,
-        ];
-
-        if (Category::create($data)) {
-            flash('Item inserido com sucesso.', 'success');
-        } else {
-            flash('Falha no cadastro.', 'danger');
-        }
-
-        return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
-    }
-
-    public function show(Category $category)
-    {
-        $view['model'] = $category;
-
-        return view('agenciafmd/categories::form', $view);
-    }
-
-    public function edit(Category $category)
-    {
-        $view['model'] = $category;
-
-        return view('agenciafmd/categories::form', $view);
-    }
-
-    public function update(Category $category, CategoryRequest $request)
-    {
-        $data = [
-            'is_active' => $request->get('is_active'),
-            'name' => $request->get('name'),
-            'description' => $request->get('description', ''),
-            'sort' => $request->sort ?? null,
-        ];
-
-        if ($category->update($data)) {
-            flash('Item atualizado com sucesso.', 'success');
-        } else {
-            flash('Falha na atualização.', 'danger');
-        }
-
-        return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
-    }
-
-    public function destroy(Category $category)
-    {
-        if ($category->delete()) {
-            flash('Item removido com sucesso.', 'success');
-        } else {
-            flash('Falha na remoção.', 'danger');
-        }
-
-        return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
-    }
-
-    public function restore($id)
-    {
-        $category = Category::onlyTrashed()
-            ->find($id);
-
-        if (!$category) {
-            flash('Item já restaurado.', 'danger');
-        } elseif ($category->restore()) {
-            flash('Item restaurado com sucesso.', 'success');
-        } else {
-            flash('Falha na restauração.', 'danger');
-        }
-
-        return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
-    }
-
-    public function batchDestroy(Request $request)
-    {
-        if (Category::destroy($request->get('id', []))) {
-            flash('Item removido com sucesso.', 'success');
-        } else {
-            flash('Falha na remoção.', 'danger');
-        }
-
-        return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
-    }
-
-    public function batchRestore(Request $request)
-    {
-        $category = Category::onlyTrashed()
-            ->whereIn('id', $request->get('id', []))
-            ->restore();
-
-        if ($category) {
-            flash('Item restaurado com sucesso.', 'success');
-        } else {
-            flash('Falha na restauração.', 'danger');
-        }
-
-        return ($url = session()->get('backUrl')) ? redirect($url) : redirect()->route("admix.{$this->categoryModel}.{$this->categoryType}.index");
-    }
-}
-```
-
-### Rotas (TODO)
-
-No arquivo `packages/agenciafmd/admix-articles/src/routes/web.php` e adicione **antes** das rotas do pacote
-
-```
-use Agenciafmd\Articles\Http\Controllers\CategoryController;
-use Agenciafmd\Articles\Models\Category;
-
-if (config('admix-articles.category')) {
-    Route::get('articles/categories', [CategoryController::class, 'index'])
-        ->name('admix.articles.categories.index')
-        ->middleware('can:view,' . Category::class);
-    Route::get('articles/categories/trash', [CategoryController::class, 'index'])
-        ->name('admix.articles.categories.trash')
-        ->middleware('can:restore,' . Category::class);
-    Route::get('articles/categories/create', [CategoryController::class, 'create'])
-        ->name('admix.articles.categories.create')
-        ->middleware('can:create,' . Category::class);
-    Route::post('articles/categories', [CategoryController::class, 'store'])
-        ->name('admix.articles.categories.store')
-        ->middleware('can:create,' . Category::class);
-    Route::get('articles/categories/{category}', [CategoryController::class, 'show'])
-        ->name('admix.articles.categories.show')
-        ->middleware('can:view,' . Category::class);
-    Route::get('articles/categories/{category}/edit', [CategoryController::class, 'edit'])
-        ->name('admix.articles.categories.edit')
-        ->middleware('can:update,' . Category::class);
-    Route::put('articles/categories/{category}', [CategoryController::class, 'update'])
-        ->name('admix.articles.categories.update')
-        ->middleware('can:update,' . Category::class);
-    Route::delete('articles/categories/destroy/{category}', [CategoryController::class, 'destroy'])
-        ->name('admix.articles.categories.destroy')
-        ->middleware('can:delete,' . Category::class);
-    Route::post('articles/categories/{id}/restore', [CategoryController::class, 'restore'])
-        ->name('admix.articles.categories.restore')
-        ->middleware('can:restore,' . Category::class);
-    Route::post('articles/categories/batchDestroy', [CategoryController::class, 'batchDestroy'])
-        ->name('admix.articles.categories.batchDestroy')
-        ->middleware('can:delete,' . Category::class);
-    Route::post('articles/categories/batchRestore', [CategoryController::class, 'batchRestore'])
-        ->name('admix.articles.categories.batchRestore')
-        ->middleware('can:restore,' . Category::class);
-}
-```
-
-### Model (TODO)
-
-Crie o arquivo `packages/agenciafmd/admix-articles/src/Models/Category.php` e adicione
-
-```php
-<?php
-
-namespace Agenciafmd\Articles\Models;
-
-use Agenciafmd\Categories\Models\Category as CategoryBase;
-use Database\Factories\ArticleCategoryFactory;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Spatie\Searchable\Searchable;
-use Spatie\Searchable\SearchResult;
-
-class Category extends CategoryBase implements Searchable
-{
-    use HasFactory;
-
-    protected $table = 'categories';
-
-    protected $attributes = [
-        'type' => 'articles-categories',
-    ];
-
-    public $searchableType;
-
-    public function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-
-        $this->searchableType = config('admix-categories.articles-categories.name');
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::addGlobalScope('type', function (Builder $builder) {
-            $builder->where('type', 'articles-categories');
-        });
-    }
-
-    public function getSearchResult(): SearchResult
-    {
-        return new SearchResult(
-            $this,
-            "{$this->name}",
-            route('admix.articles.categories.edit', $this->id)
-        );
-    }
-
-    public function getUrlAttribute()
-    {
-        return route('frontend.articles.index', [
-            $this->attributes['slug'],
-        ]);
-    }
-
-    public function scopeSort($query, $type = 'articles-categories')
-    {
-        parent::scopeSort($query, $type);
-    }
-
-    protected static function newFactory()
-    {
-        return ArticleCategoryFactory::new();
-    }
-}
-```
-
-### Relacionamento (TODO)
-
-No arquivo `packages/agenciafmd/admix-articles/src/Models/Article.php` adicione
-
-```php
-use Agenciafmd\Articles\Models\Category;
-
-...
-
-public function category()
-{
-    return $this->belongsTo(Category::class);
+    use WithCategories;
 }
 ```
 
