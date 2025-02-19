@@ -26,7 +26,7 @@ class Select extends Component
         $this->options = Category::query()
             ->where('model', $this->model)
             ->where('type', $this->type)
-            ->isActive()
+//            ->isActive()
             ->sort()
             ->get()
             ->map(function ($category) {
