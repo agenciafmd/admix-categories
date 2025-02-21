@@ -34,11 +34,11 @@ return new class extends Migration
             $table->foreignId('category_id')
                 ->constrained()
                 ->cascadeOnDelete();
-            $table->morphs('categoriable');
+            $table->integer('categoriable_id')
+                ->index();
             $table->unique([
                 'category_id',
                 'categoriable_id',
-                'categoriable_type',
             ]);
         });
     }
