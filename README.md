@@ -54,9 +54,9 @@ return [
 
 Vamos usar o pacote **[admix-articles](https://github.com/agenciafmd/admix-articles)** como exemplo
 
-Mova o arquivo `/config/admix-categories.php` e para `/packages/agenciafmd/admix-articles/config/admix-categories.php`
+Mova o arquivo `config/admix-categories.php` e para `packages/agenciafmd/admix-articles/config/admix-categories.php`
 
-Carregue os arquivos em `/packages/agenciafmd/admix-articles/src/Providers/ArticleServiceProvider.php`
+Carregue os arquivos em `packages/agenciafmd/admix-articles/src/Providers/ArticleServiceProvider.php`
 
 ```php
 protected function loadConfigs()
@@ -214,7 +214,7 @@ protected $policies = [
 No arquivo `packages/agenciafmd/admix-articles/src/Http/Components/Aside/Article.php` modifique a estrutura para aceitar
 as categorias
 
-```blade
+```php
 <?php
 
 namespace Agenciafmd\Products\Http\Components\Aside;
@@ -269,16 +269,92 @@ class Product extends Component
 }
 ```
 
-### Listagem (TODO)
+### Listagem
 
-No arquivo `packages/agenciafmd/admix-articles/src/resources/views/index.blade.php` adicione na `@section('filters')`
+No arquivo `packages/agenciafmd/admix-articles/src/Livewire/Pages/Article/Index.php`
 
-```blade
-@include('agenciafmd/categories::partials.form.filter', [
-    'label' => config('admix-categories.articles-categories.name'),
-    'type' => 'articles-categories',
-    'name' => 'category_id'
-])
+Traga o `builder` da `BaseIndex` e faça
+o [Eager Loading](https://laravel.com/docs/11.x/eloquent-relationships#eager-loading) da categoria
+
+```php
+public function builder(): Builder
+{
+return $this->model::query()
+    ->with(['categories'])
+    ->when($this->isTrash, function (Builder $builder) {
+        $builder->onlyTrashed();
+    })
+    ->when(!$this->hasSorts(), function (Builder $builder) {
+        $builder->sort();
+    });
+}
+```
+
+Monte o `filters` e adicione o filtro da categoria
+
+```php
+public function filters(): array
+{
+    $this->setAdditionalFilters([
+        SelectFilter::make(__('admix-articles::fields.category'), 'category')
+            ->options(['' => __('-'), ...(new Product)->categoriesToSelect()])
+            ->filter(static function (Builder $builder, string $value) {
+                $builder->whereHas('categories', function ($builder) use ($value) {
+                    $builder->where($builder->qualifyColumn('model'), Product::class)
+                        ->where($builder->qualifyColumn('type'), 'categories')
+                        ->where($builder->qualifyColumn('id'), $value);
+                });
+            }),
+        MultiSelectFilter::make(__('admix-articles::fields.tags'), 'tags')
+            ->options((new Product)->categoriesToSelect('tags'))
+            ->filter(static function (Builder $builder, array $values) {
+                $builder->whereHas('categories', function ($builder) use ($values) {
+                    $builder->where($builder->qualifyColumn('model'), Product::class)
+                        ->where($builder->qualifyColumn('type'), 'tags')
+                        ->whereIn($builder->qualifyColumn('id'), $values);
+                });
+            }),
+    ]);
+
+    return parent::filters();
+}
+```
+
+Monte o `columns` e adicione a coluna da categoria
+
+```php
+public function columns(): array
+{
+    $this->setAdditionalColumns([
+        Column::make(__('admix-articles::fields.category'))
+            ->label(
+                fn ($row, Column $column) => $row->categories
+                    ->where('type', 'categories')
+                    ->first()
+                    ?->name
+            )
+            ->sortable()
+            ->searchable(function (Builder $builder, $value) {
+                $builder->orWhereHas('categories', function ($builder) use ($value) {
+                    $builder->where($builder->qualifyColumn('name'), 'like', '%' . $value . '%');
+                });
+            }),
+        Column::make(__('admix-articles::fields.tags'))
+            ->label(
+                fn ($row, Column $column) => str($row->categories
+                    ->where('type', 'tags')
+                    ->pluck('name')?->implode(', '))->limit(40)
+            )
+            ->sortable()
+            ->searchable(function (Builder $builder, $value) {
+                $builder->orWhereHas('categories', function ($builder) use ($value) {
+                    $builder->where($builder->qualifyColumn('name'), 'like', '%' . $value . '%');
+                });
+            }),
+    ]);
+
+    return parent::columns();
+}
 ```
 
 ### Formulário

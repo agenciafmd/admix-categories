@@ -23,21 +23,13 @@ class Select extends Component
             ->limit(5, '')
             ->toString();
 
-        $this->options = Category::query()
-            ->where('model', $this->model)
-            ->where('type', $this->type)
-//            ->isActive()
-            ->sort()
-            ->get()
-            ->map(function ($category) {
-                return [
-                    'value' => $category->id,
-                    'label' => $category->name,
-                ];
-            })->prepend([
-                'value' => '',
-                'label' => '-',
-            ])->toArray();
+        $options = (new $model)->categoriesToSelect($this->type);
+        $this->options = collect($options)->map(function ($item, $key) {
+            return [
+                'value' => $key,
+                'label' => $item,
+            ];
+        })->toArray();
     }
 
     public function render(): string|View
@@ -58,6 +50,9 @@ class Select extends Component
                         }}
                     >
                 @foreach($options as $option)
+                    @if(!$attributes->has('multiple') && $loop->first)
+                        <option value="" selected>{{ __('-') }}</option>
+                    @endif
                     <option value="{{ $option['value'] }}" @disabled(isset($option['disabled']) && ($option['disabled']))>{{ $option['label'] }}</option>
                 @endforeach
             </select>
