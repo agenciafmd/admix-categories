@@ -59,7 +59,7 @@ Mova o arquivo `config/admix-categories.php` e para `packages/agenciafmd/admix-a
 Carregue os arquivos em `packages/agenciafmd/admix-articles/src/Providers/ArticleServiceProvider.php`
 
 ```php
-protected function loadConfigs()
+protected function registerConfigs()
 {
     $this->mergeConfigFrom(__DIR__ . '/../config/admix-categories.php', 'admix-categories');
 }

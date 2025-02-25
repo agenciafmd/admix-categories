@@ -10,17 +10,17 @@ class BladeServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->loadBladeComponents();
+        $this->bootBladeComponents();
 
-        $this->loadBladeDirectives();
+        $this->bootBladeDirectives();
 
-        $this->loadBladeComposers();
+        $this->bootBladeComposers();
 
-        $this->setMenu();
+        $this->bootMenu();
 
-        $this->loadViews();
+        $this->bootViews();
 
-        $this->publish();
+        $this->bootPublish();
     }
 
     public function register(): void
@@ -28,23 +28,23 @@ class BladeServiceProvider extends ServiceProvider
         //
     }
 
-    private function loadBladeComponents(): void
+    private function bootBladeComponents(): void
     {
         Blade::componentNamespace('Agenciafmd\\Categories\\View\\Components', 'admix-categories');
         Blade::component('categories::form.select', Components\Forms\Inputs\Select::class);
     }
 
-    private function loadBladeComposers(): void
+    private function bootBladeComposers(): void
     {
         //
     }
 
-    private function loadBladeDirectives(): void
+    private function bootBladeDirectives(): void
     {
         //
     }
 
-    private function setMenu(): void
+    private function bootMenu(): void
     {
         //        $this->app->make('admix-menu')
         //            ->push((object)[
@@ -53,12 +53,12 @@ class BladeServiceProvider extends ServiceProvider
         //            ]);
     }
 
-    private function loadViews(): void
+    private function bootViews(): void
     {
         $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'admix-categories');
     }
 
-    private function publish(): void
+    private function bootPublish(): void
     {
         // $this->publishes([
         //     __DIR__ . '/../resources/views' => base_path('resources/views/vendor/agenciafmd/categories'),

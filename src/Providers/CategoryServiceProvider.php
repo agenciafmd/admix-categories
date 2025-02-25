@@ -8,21 +8,21 @@ class CategoryServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->providers();
+        $this->bootProviders();
 
-        $this->loadMigrations();
+        $this->bootMigrations();
 
-        $this->loadTranslations();
+        $this->bootTranslations();
 
-        $this->publish();
+        $this->bootPublish();
     }
 
     public function register(): void
     {
-        $this->loadConfigs();
+        $this->registerConfigs();
     }
 
-    private function providers(): void
+    private function bootProviders(): void
     {
         $this->app->register(BladeServiceProvider::class);
         $this->app->register(CommandServiceProvider::class);
@@ -31,7 +31,7 @@ class CategoryServiceProvider extends ServiceProvider
         $this->app->register(LivewireServiceProvider::class);
     }
 
-    private function publish(): void
+    private function bootPublish(): void
     {
         $this->publishes([
             __DIR__ . '/../../config/admix-categories.php' => base_path('config/admix-categories.php'),
@@ -46,18 +46,18 @@ class CategoryServiceProvider extends ServiceProvider
         ], ['admix-categories:translations', 'admix-translations']);
     }
 
-    private function loadMigrations(): void
+    private function bootMigrations(): void
     {
         $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
     }
 
-    private function loadTranslations(): void
+    private function bootTranslations(): void
     {
         $this->loadTranslationsFrom(__DIR__ . '/../../lang', 'admix-categories');
         $this->loadJsonTranslationsFrom(__DIR__ . '/../../lang');
     }
 
-    private function loadConfigs(): void
+    private function registerConfigs(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../../config/admix-categories.php', 'admix-categories');
         $this->mergeConfigFrom(__DIR__ . '/../../config/audit-alias.php', 'audit-alias');
