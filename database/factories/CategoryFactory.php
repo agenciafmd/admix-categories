@@ -14,7 +14,8 @@ class CategoryFactory extends Factory
         return [
             'is_active' => $this->faker->optional(0.3, 1)
                 ->randomElement([0]),
-            'name' => $this->faker->sentence(3),
+            'name' => str($this->faker->word())->ucfirst(),
+            'type' => 'categories',
         ];
     }
 }

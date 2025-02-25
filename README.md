@@ -99,7 +99,188 @@ No arquivo `packages/agenciafmd/admix-articles/config/gate.php` adicione antes d
 ],
 ```
 
-### Preparando o formulário
+### Politicas (TODO)
+
+Crie o arquivo `packages/agenciafmd/admix-articles/src/Policies/CategoryPolicy.php`
+
+```php
+<?php
+
+namespace Agenciafmd\Articles\Policies;
+
+use Agenciafmd\Admix\Policies\AdmixPolicy;
+
+class CategoryPolicy extends AdmixPolicy
+{
+    //
+}
+```
+
+### Registrando as politicas (TODO)
+
+No arquivo `packages/agenciafmd/admix-articles/src/Providers/AuthServiceProviders.php` adicione
+
+```php
+use Agenciafmd\Articles\Policies\CategoryPolicy;
+use Agenciafmd\Articles\Models\Category;
+
+...
+protected $policies = [
+    ...
+    Category::class => CategoryPolicy::class,
+];
+...
+```
+
+### Menu
+
+No arquivo `packages/agenciafmd/admix-articles/src/Http/Components/Aside/Article.php` modifique a estrutura para aceitar
+as categorias
+
+```php
+<?php
+
+namespace Agenciafmd\Articles\Http\Components\Aside;
+
+use Illuminate\Contracts\View\View;
+use Illuminate\View\Component;
+
+class Article extends Component
+{
+    public function __construct(
+        public string $icon = '',
+        public string $label = '',
+        public bool $active = false,
+        public bool $visible = false,
+        public array $children = [],
+    ) {}
+
+    public function render(): View
+    {
+        $model = 'articles';
+        $types = collect(config('admix-categories.categories'))
+            ->where('slug', $model)->first()['types'];
+        $children = collect($types)->map(function ($item) use ($model) {
+            return [
+                'label' => __($item['name']),
+                'url' => route('admix.categories.index', [
+                    'categoryModel' => $model,
+                    'categoryType' => $item['slug'],
+                ]),
+                'active' => request()?->is("*{$model}/{$item['slug']}*"),
+                'visible' => true,
+            ];
+        })->toArray();
+
+        $this->icon = __(config('admix-articles.icon'));
+        $this->label = __(config('admix-articles.name'));
+        $this->active = request()?->currentRouteNameStartsWith(['admix.articles']) || (request()->categoryModel === $model);
+        $this->visible = true;
+
+        $this->children = [
+            ...$children,
+            [
+                'label' => __(config('admix-articles.name')),
+                'url' => route('admix.articles.index'),
+                'active' => request()?->currentRouteNameStartsWith('admix.articles'),
+                'visible' => true,
+            ],
+        ];
+
+        return view('admix::components.aside.dropdown');
+    }
+}
+```
+
+### Listagem
+
+No arquivo `packages/agenciafmd/admix-articles/src/Livewire/Pages/Article/Index.php`
+
+Traga o `builder` da `BaseIndex` e faça
+o [Eager Loading](https://laravel.com/docs/11.x/eloquent-relationships#eager-loading) da categoria
+
+```php
+public function builder(): Builder
+{
+return $this->model::query()
+    ->with(['categories'])
+    ->when($this->isTrash, function (Builder $builder) {
+        $builder->onlyTrashed();
+    })
+    ->when(!$this->hasSorts(), function (Builder $builder) {
+        $builder->sort();
+    });
+}
+```
+
+Monte o `filters` e adicione o filtro da categoria
+
+```php
+public function filters(): array
+{
+    $this->setAdditionalFilters([
+        SelectFilter::make(__('admix-articles::fields.category'), 'category')
+            ->options(['' => __('-'), ...(new Article)->categoriesToSelect()])
+            ->filter(static function (Builder $builder, string $value) {
+                $builder->whereHas('categories', function ($builder) use ($value) {
+                    $builder->where($builder->qualifyColumn('model'), Article::class)
+                        ->where($builder->qualifyColumn('type'), 'categories')
+                        ->where($builder->qualifyColumn('id'), $value);
+                });
+            }),
+        MultiSelectFilter::make(__('admix-articles::fields.tags'), 'tags')
+            ->options((new Article)->categoriesToSelect('tags'))
+            ->filter(static function (Builder $builder, array $values) {
+                $builder->whereHas('categories', function ($builder) use ($values) {
+                    $builder->where($builder->qualifyColumn('model'), Article::class)
+                        ->where($builder->qualifyColumn('type'), 'tags')
+                        ->whereIn($builder->qualifyColumn('id'), $values);
+                });
+            }),
+    ]);
+
+    return parent::filters();
+}
+```
+
+Monte o `columns` e adicione a coluna da categoria
+
+```php
+public function columns(): array
+{
+    $this->setAdditionalColumns([
+        Column::make(__('admix-articles::fields.category'))
+            ->label(
+                fn ($row, Column $column) => $row->categories
+                    ->where('type', 'categories')
+                    ->first()
+                    ?->name
+            )
+            ->sortable()
+            ->searchable(function (Builder $builder, $value) {
+                $builder->orWhereHas('categories', function ($builder) use ($value) {
+                    $builder->where($builder->qualifyColumn('name'), 'like', '%' . $value . '%');
+                });
+            }),
+        Column::make(__('admix-articles::fields.tags'))
+            ->label(
+                fn ($row, Column $column) => str($row->categories
+                    ->where('type', 'tags')
+                    ->pluck('name')?->implode(', '))->limit(40)
+            )
+            ->sortable()
+            ->searchable(function (Builder $builder, $value) {
+                $builder->orWhereHas('categories', function ($builder) use ($value) {
+                    $builder->where($builder->qualifyColumn('name'), 'like', '%' . $value . '%');
+                });
+            }),
+    ]);
+
+    return parent::columns();
+}
+```
+
+### Formulário
 
 No arquivo `packages/agenciafmd/admix-articles/src/Livewire/Pages/Article/Form.php`
 
@@ -176,189 +357,6 @@ $this->article->syncCategories([$this->category, ...$this->tags]);
 return $this->article->save();
 ```
 
-### Politicas (TODO)
-
-Crie o arquivo `packages/agenciafmd/admix-articles/src/Policies/CategoryPolicy.php`
-
-```php
-<?php
-
-namespace Agenciafmd\Articles\Policies;
-
-use Agenciafmd\Admix\Policies\AdmixPolicy;
-
-class CategoryPolicy extends AdmixPolicy
-{
-    //
-}
-```
-
-### Registrando as politicas (TODO)
-
-No arquivo `packages/agenciafmd/admix-articles/src/Providers/AuthServiceProviders.php` adicione
-
-```php
-use Agenciafmd\Articles\Policies\CategoryPolicy;
-use Agenciafmd\Articles\Models\Category;
-
-...
-protected $policies = [
-    ...
-    Category::class => CategoryPolicy::class,
-];
-...
-```
-
-### Menu
-
-No arquivo `packages/agenciafmd/admix-articles/src/Http/Components/Aside/Article.php` modifique a estrutura para aceitar
-as categorias
-
-```php
-<?php
-
-namespace Agenciafmd\Products\Http\Components\Aside;
-
-use Illuminate\Contracts\View\View;
-use Illuminate\View\Component;
-
-class Product extends Component
-{
-    public function __construct(
-        public string $icon = '',
-        public string $label = '',
-        public bool $active = false,
-        public bool $visible = false,
-        public array $children = [],
-    ) {}
-
-    public function render(): View
-    {
-        $model = 'articles';
-        $types = collect(config('admix-categories.categories'))
-            ->where('slug', $model)->first()['types'];
-        $children = collect($types)->map(function ($item) use ($model) {
-            return [
-                'label' => __($item['name']),
-                'url' => route('admix.categories.index', [
-                    'categoryModel' => $model,
-                    'categoryType' => $item['slug'],
-                ]),
-                'active' => request()?->is("*{$model}/{$item['slug']}*"),
-                'visible' => true,
-            ];
-        })->toArray();
-
-        $this->icon = __(config('admix-articles.icon'));
-        $this->label = __(config('admix-articles.name'));
-        $this->active = request()?->currentRouteNameStartsWith(['admix.articles']) || (request()->categoryModel === $model);
-        $this->visible = true;
-
-        $this->children = [
-            ...$children,
-            [
-                'label' => __(config('admix-articles.name')),
-                'url' => route('admix.articles.index'),
-                'active' => request()?->currentRouteNameStartsWith('admix.articles'),
-                'visible' => true,
-            ],
-        ];
-
-        return view('admix::components.aside.dropdown');
-    }
-}
-```
-
-### Listagem
-
-No arquivo `packages/agenciafmd/admix-articles/src/Livewire/Pages/Article/Index.php`
-
-Traga o `builder` da `BaseIndex` e faça
-o [Eager Loading](https://laravel.com/docs/11.x/eloquent-relationships#eager-loading) da categoria
-
-```php
-public function builder(): Builder
-{
-return $this->model::query()
-    ->with(['categories'])
-    ->when($this->isTrash, function (Builder $builder) {
-        $builder->onlyTrashed();
-    })
-    ->when(!$this->hasSorts(), function (Builder $builder) {
-        $builder->sort();
-    });
-}
-```
-
-Monte o `filters` e adicione o filtro da categoria
-
-```php
-public function filters(): array
-{
-    $this->setAdditionalFilters([
-        SelectFilter::make(__('admix-articles::fields.category'), 'category')
-            ->options(['' => __('-'), ...(new Product)->categoriesToSelect()])
-            ->filter(static function (Builder $builder, string $value) {
-                $builder->whereHas('categories', function ($builder) use ($value) {
-                    $builder->where($builder->qualifyColumn('model'), Product::class)
-                        ->where($builder->qualifyColumn('type'), 'categories')
-                        ->where($builder->qualifyColumn('id'), $value);
-                });
-            }),
-        MultiSelectFilter::make(__('admix-articles::fields.tags'), 'tags')
-            ->options((new Product)->categoriesToSelect('tags'))
-            ->filter(static function (Builder $builder, array $values) {
-                $builder->whereHas('categories', function ($builder) use ($values) {
-                    $builder->where($builder->qualifyColumn('model'), Product::class)
-                        ->where($builder->qualifyColumn('type'), 'tags')
-                        ->whereIn($builder->qualifyColumn('id'), $values);
-                });
-            }),
-    ]);
-
-    return parent::filters();
-}
-```
-
-Monte o `columns` e adicione a coluna da categoria
-
-```php
-public function columns(): array
-{
-    $this->setAdditionalColumns([
-        Column::make(__('admix-articles::fields.category'))
-            ->label(
-                fn ($row, Column $column) => $row->categories
-                    ->where('type', 'categories')
-                    ->first()
-                    ?->name
-            )
-            ->sortable()
-            ->searchable(function (Builder $builder, $value) {
-                $builder->orWhereHas('categories', function ($builder) use ($value) {
-                    $builder->where($builder->qualifyColumn('name'), 'like', '%' . $value . '%');
-                });
-            }),
-        Column::make(__('admix-articles::fields.tags'))
-            ->label(
-                fn ($row, Column $column) => str($row->categories
-                    ->where('type', 'tags')
-                    ->pluck('name')?->implode(', '))->limit(40)
-            )
-            ->sortable()
-            ->searchable(function (Builder $builder, $value) {
-                $builder->orWhereHas('categories', function ($builder) use ($value) {
-                    $builder->where($builder->qualifyColumn('name'), 'like', '%' . $value . '%');
-                });
-            }),
-    ]);
-
-    return parent::columns();
-}
-```
-
-### Formulário
-
 No arquivo `packages/agenciafmd/admix-articles/resources/views/pages/article/form.blade.php` use o componente
 `<x-categories::form.select .../>`
 
@@ -396,135 +394,91 @@ class Article extends Model
 }
 ```
 
-### Factory (TODO)
+### Factory e Seed
 
-Crie o arquivo `packages/agenciafmd/admix-articles/src/database/factories/ArticleCategoryFactory.php.stub` e adicione
+Na factory do `ArticleFactory` adicione o método `withTags` (note o nome no plural por conta do `hasMany`) e o método
+`withCategory` (note o nome no singular por conta do `hasOne` "simulado")
 
-```php
-<?php
-
-namespace Database\Factories;
-
-use Agenciafmd\Articles\Models\Category;
-use Illuminate\Database\Eloquent\Factories\Factory;
-
-class ArticleCategoryFactory extends Factory
+```
+public function withTags(int $total = 10, string $type = 'tags'): Factory
 {
-    protected $model = Category::class;
+    $categories = Category::query()
+        ->where('type', $type)
+        ->where('model', $this->model)
+        ->inRandomOrder()
+        ->pluck('id');
 
-    public function definition()
-    {
+    return $this->state(function (array $attributes) {
         return [
-            'is_active' => $this->faker->optional(0.3, 1)
-                ->randomElement([0]),
-            'name' => $this->faker->sentence(),
+            //
         ];
-    }
+    })->afterMaking(function (Product $product) {
+        //
+    })->afterCreating(function (Product $product) use ($type, $categories, $total) {
+        $product->categories()
+            ->where('model', $this->model)
+            ->where('type', $type)
+            ->sync($categories->random($total)->toArray(), false);
+    });
+}
+
+public function withCategory(string $type = 'categories'): Factory
+{
+    return $this->withTags(1, $type);
 }
 ```
 
-### Seed (TODO)
-
-Crie o arquivo `packages/agenciafmd/admix-articles/src/database/seeds/ArticlesCategoriesTableSeeder.php.stub` e adicione
+Crie o arquivo `packages/agenciafmd/admix-articles/src/database/seeds/ArticleCategoryTableSeeder.php` e adicione
 
 ```php
 <?php
 
-namespace Database\Seeders;
+namespace Agenciafmd\Articles\Database\Seeders;
 
-use Agenciafmd\Articles\Models\Category;
-use Faker\Factory;
+use Agenciafmd\Categories\Models\Category;
+use Agenciafmd\Articles\Models\Article;
 use Illuminate\Database\Seeder;
 
-class ArticlesCategoriesTableSeeder extends Seeder
+class ArticleCategoryTableSeeder extends Seeder
 {
-    protected int $total = 10;
+    protected int $total = 100;
 
-    public function run()
+    protected string $type = 'categories';
+
+    protected string $model = Article::class;
+
+    public function run(): void
     {
-        Category::withTrashed()
-            ->get()->each->forceDelete();
+        Category::query()
+            ->where('type', $this->type)
+            ->where('model', $this->model)
+            ->get()
+            ->each
+            ->delete();
 
-        if (!config('admix-articles.category')) {
-            return false;
-        }
-
-        if (config('admix-categories.articles-categories.items')) {
-            $this->staticItems();
-
-            return false;
-        }
-
-        $this->factoryItems();
-    }
-
-    private function factoryItems()
-    {
-        $this->command->getOutput()
-            ->progressStart($this->total);
-
-        $faker = Factory::create('pt_BR');
-
-        Category::factory($this->total)
-            ->create()
-            ->each(function ($category) use ($faker) {
-                foreach (config('upload-configs.articles-categories') as $key => $image) {
-                    $fakerDir = __DIR__ . '/../faker/articles-categories/' . $key;
-
-                    if ($image['faker_dir']) {
-                        $fakerDir = $image['faker_dir'];
-                    }
-
-                    if ($image['multiple']) {
-                        $items = $faker->numberBetween(0, 6);
-                        for ($i = 0; $i < $items; $i++) {
-                            $category->doUploadMultiple($faker->file($fakerDir, storage_path('admix/tmp')), $key);
-                        }
-                    } else {
-                        $category->doUpload($faker->file($fakerDir, storage_path('admix/tmp')), $key);
-                    }
-                }
-
-                $category->save();
-
-                $this->command->getOutput()
-                    ->progressAdvance();
+        collect(range(1, $this->total))
+            ->each(function () {
+                Category::factory()
+                    ->create([
+                        'type' => $this->type,
+                        'model' => $this->model,
+                    ]);
             });
-
-        $this->command->getOutput()
-            ->progressFinish();
-    }
-
-    private function staticItems()
-    {
-        $items = collect(config('admix-categories.articles-categories.items'));
-
-        $this->command->getOutput()
-            ->progressStart($items->count());
-
-        $items->each(function ($item) {
-            Category::create([
-                'is_active' => 1,
-                'name' => $item,
-            ]);
-
-            $this->command->getOutput()
-                ->progressAdvance();
-        });
-
-        $this->command->getOutput()
-            ->progressFinish();
     }
 }
 ```
 
-### Seed na ArticleFactory (TODO)
+> Faça o mesmo para a `tags`, mudando o nome do arquivo e o `type`
 
-```
-...
-$categories = Category::pluck('id')
-    ->toArray();
-...
-    'category_id' => $this->faker->randomElement($categories),
-...
+No arquivo `packages/agenciafmd/admix-articles/src/database/seeds/ArticleTableSeeder.php` adicione o método
+`withCategory` e o método `withTags`
+
+```php
+collect(range(1, $this->total))
+    ->each(function () {
+        Product::factory()
+            ->withCategory()
+            ->withTags(random_int(1, 3))
+            ->create();
+    });
 ```

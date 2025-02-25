@@ -11,7 +11,7 @@ trait WithCategories
 {
     public static function bootWithCategories()
     {
-        static::forceDeleted(function (Model $deletedModel) {
+        static::forceDeleted(static function (Model $deletedModel) {
             $categories = $deletedModel->categories()
                 ->pluck('id');
 
