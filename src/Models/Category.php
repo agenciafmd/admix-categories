@@ -34,7 +34,7 @@ class Category extends Model implements AuditableContract
 
     public function prunable(): Builder
     {
-        return self::where('deleted_at', '<=', now()->subYear());
+        return static::query()->where('deleted_at', '<=', now()->subYear());
     }
 
     protected static function newFactory(): CategoryFactory|\Database\Factories\CategoryFactory
