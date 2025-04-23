@@ -4,6 +4,8 @@ namespace Agenciafmd\Categories\Http\Components\Aside;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
+use Illuminate\Support\Facades\Gate;
+use Agenciafmd\Categories\Models\Category as CategoryModel;
 
 class Category extends Component
 {
@@ -24,7 +26,7 @@ class Category extends Component
             'categoryType' => 'categories',
         ]);
         $this->active = request()?->currentRouteNameStartsWith('admix.categories');
-        $this->visible = true;
+        $this->visible = Gate::allows('view', CategoryModel::class);
 
         return view('admix::components.aside.item');
     }
