@@ -39,5 +39,16 @@ return [
                 ],
             ],
         ],
+        [
+            'model' => \Agenciafmd\Articles\Models\Article::class,
+            'name' => 'Artigos',
+            'slug' => 'articles',
+            'types' => [
+                [
+                    'name' => 'Categorias',
+                    'slug' => 'categories',
+                ],
+            ],
+        ],
     ],
 ];
