@@ -220,7 +220,7 @@ public function filters(): array
 {
     $this->setAdditionalFilters([
         SelectFilter::make(__('admix-articles::fields.category'), 'category')
-            ->options(['' => __('-'), ...(new Article)->categoriesToSelect()])
+            ->options(['' => __('-')] + (new Article)->categoriesToSelect())
             ->filter(static function (Builder $builder, string $value) {
                 $builder->whereHas('categories', function ($builder) use ($value) {
                     $builder->where($builder->qualifyColumn('model'), Article::class)
