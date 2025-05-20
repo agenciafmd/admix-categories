@@ -40,7 +40,7 @@ return new class extends Migration
                 'categoriable_id',
                 'categoriable_type',
                 'type',
-            ]);
+            ], 'categoriables_unique');
         });
     }
 };

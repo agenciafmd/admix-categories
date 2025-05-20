@@ -26,6 +26,38 @@
         <div class="col-md-6 mb-3">
             <!-- input here -->
         </div>
+
+        {{--        @if($myConfig->has('category.parent_id'))--}}
+        {{--            <div class="col-md-6 mb-3">--}}
+        {{--                <x-form.select--}}
+        {{--                        name="form.parent_id"--}}
+        {{--                        :label="__('admix-categories::fields.parent')"--}}
+        {{--                        :options="$categories"--}}
+        {{--                        :option-label="'name'"--}}
+        {{--                        :option-value="'id'"--}}
+        {{--                />--}}
+        {{--            </div>--}}
+        {{--        </div>--}}
+
+        @if($this->form->myConfig['has_description'])
+            <div class="col-md-12 mb-3">
+                <x-form.easymde
+                        name="form.description"
+                        :label="__('admix-categories::fields.description')"
+                />
+            </div>
+        @endif
+
+        @if($this->form->myConfig['image'])
+            <div class="col-md-12 mb-3">
+                <x-form.image
+                        name="form.image"
+                        :label="__('admix-categories::fields.image')"
+                        :hide-content="true"
+                        :hide-crop="true"
+                />
+            </div>
+        @endif
     </div>
     <x-slot:complement>
         @if($category->exists)

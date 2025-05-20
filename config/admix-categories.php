@@ -6,40 +6,6 @@ return [
     'sort' => 100,
     'categories' => [
         [
-            'model' => \Agenciafmd\Products\Models\Product::class,
-            'name' => 'Produtos',
-            'slug' => 'products',
-            'types' => [
-                [
-                    'name' => 'Categorias',
-                    'slug' => 'categories',
-                ],
-                [
-                    'name' => 'Tags',
-                    'slug' => 'tags',
-                ],
-            ],
-        ],
-        [
-            'model' => \Agenciafmd\Admix\Models\User::class,
-            'name' => 'Usuários',
-            'slug' => 'users',
-            'types' => [
-                [
-                    'name' => 'Categorias',
-                    'slug' => 'categories',
-                ],
-                [
-                    'name' => 'Tags',
-                    'slug' => 'tags',
-                ],
-                [
-                    'name' => 'Tipos',
-                    'slug' => 'types',
-                ],
-            ],
-        ],
-        [
             'model' => \Agenciafmd\Articles\Models\Article::class,
             'name' => 'Artigos',
             'slug' => 'articles',
@@ -47,6 +13,14 @@ return [
                 [
                     'name' => 'Categorias',
                     'slug' => 'categories',
+                    'is_nested' => false,
+                    'has_description' => true,
+                    'image' => [
+                        'max_size' => '1024', // 1MB
+                        'max_width' => '200',
+                        'max_height' => '200',
+                        'ratio' => 1,
+                    ],
                 ],
             ],
         ],
