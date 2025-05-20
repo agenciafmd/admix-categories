@@ -41,6 +41,14 @@ return [
                 [
                     'name' => 'Categorias',
                     'slug' => 'categories',
+                    'is_nested' => false,
+                    'has_description' => true,
+                    'image' => [
+                        'max_size' => '1024', // 1MB
+                        'max_width' => '200',
+                        'max_height' => '200',
+                        'ratio' => 1,
+                    ],
                 ],
                 // adicione quantos tipos forem necessários
             ],
