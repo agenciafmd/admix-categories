@@ -5,4 +5,5 @@ return [
     'name' => 'nome',
     'description' => 'descrição',
     'image' => 'imagem',
+    'sort' => 'ordenação',
 ];

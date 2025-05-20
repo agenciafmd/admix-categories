@@ -43,6 +43,9 @@ class Form extends LivewireForm
     #[Validate]
     public Collection $image;
 
+    #[Validate]
+    public ?int $sort = null;
+
     public function setModel(Category $category, mixed $model, string $type): void
     {
         $this->category = $category;
@@ -58,6 +61,7 @@ class Form extends LivewireForm
             $this->image = $category->image;
             $this->image_meta = $this->image->pluck('meta')
                 ->toArray();
+            $this->sort = $category->sort;
         }
     }
 
@@ -70,6 +74,10 @@ class Form extends LivewireForm
             'name' => [
                 'required',
                 'max:255',
+            ],
+            'sort' => [
+                'nullable',
+                'integer',
             ],
         ];
 
@@ -132,6 +140,7 @@ class Form extends LivewireForm
             'image' => __('admix-categories::fields.image'),
             'image_files.*' => __('admix-categories::fields.image'),
             'image_meta' => __('admix-categories::fields.image'),
+            'sort' => __('admix-categories::fields.sort'),
         ];
     }
 
@@ -139,6 +148,9 @@ class Form extends LivewireForm
     {
         $this->validate(rules: $this->rules(), attributes: $this->validationAttributes());
         $data = $this->except(
+            'image',
+            'image_files',
+            'image_meta',
             'category',
             'myConfig',
         );

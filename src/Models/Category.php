@@ -26,6 +26,7 @@ class Category extends Model implements AuditableContract, HasMedia
 
     protected array $defaultSort = [
         'is_active' => 'desc',
+        'sort' => 'asc',
         'name' => 'asc',
     ];
 

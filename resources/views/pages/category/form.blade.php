@@ -58,6 +58,13 @@
                 />
             </div>
         @endif
+
+        <div class="col-md-6 mb-3">
+            <x-form.number
+                    name="form.sort"
+                    :label="__('admix-categories::fields.sort')"
+            />
+        </div>
     </div>
     <x-slot:complement>
         @if($category->exists)
