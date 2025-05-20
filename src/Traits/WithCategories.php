@@ -6,17 +6,25 @@ use Agenciafmd\Categories\Models\Category;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Arr;
 
 trait WithCategories
 {
     public static function bootWithCategories()
     {
         static::forceDeleted(static function (Model $deletedModel) {
-            $categories = $deletedModel->categories()
-                ->pluck('id');
+            //            $categories = $deletedModel->categories()
+            //                ->pluck('id');
+            //
+            //            $deletedModel->categories()
+            //                ->detach($categories);
 
-            $deletedModel->categories()
-                ->detach($categories);
+            // TODO: não está funcionando
+            //            $deletedModel->categories()
+            //                ->where('categories.model', self::class)
+            //                ->get()->each(function ($category) {
+            //                    $category->pivot->delete();
+            //                });
         });
     }
 
@@ -29,24 +37,47 @@ trait WithCategories
     public function loadCategories(string $type = 'categories')
     {
         return $this->categories()
-            ->where('type', $type)
+            ->where('categories.model', self::class)
+            ->where('categories.type', $type)
             ->get();
     }
 
     public function categoriesToSelect(string $type = 'categories'): array
     {
         return Category::query()
-            ->where('model', self::class)
-            ->where('type', $type)
+            ->where('categories.model', self::class)
+            ->where('categories.type', $type)
             ->sort()
             ->pluck('name', 'id')
             ->toArray();
     }
 
-    public function syncCategories(array $ids): array
+    public function syncCategory(int $id, string $type = 'categories'): array
     {
-        return $this->categories()
-            ->sync($ids);
+        $ids = Arr::wrap($id);
+
+        return $this->syncCategories($ids, $type);
+    }
+
+    public function syncCategories(array $ids, string $type = 'categories'): array
+    {
+        $this->categories()
+            ->where('categories.model', self::class)
+            ->where('categories.type', $type)
+            ->get()
+            ->each(function ($category) {
+                $category->pivot->delete();
+            });
+
+        $this->categories()
+            ->where('categories.model', self::class)
+            ->where('categories.type', $type)
+            ->attach($ids, [
+                'categoriable_type' => self::class,
+                'type' => $type,
+            ]);
+
+        return $ids;
     }
 
     public function categories(): BelongsToMany
@@ -56,7 +87,12 @@ trait WithCategories
             'categoriables',
             'categoriable_id',
             'category_id',
-        )->sort();
+        )
+            ->withPivot([
+                'categoriable_type',
+                'type',
+            ])
+            ->sort();
     }
 
     public function scopeWithAnyCategories(Builder $builder, array $ids = [], ?string $type = null): Builder

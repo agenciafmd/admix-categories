@@ -352,7 +352,8 @@ if (!$this->article->exists) {
     $this->article->save();
 }
 
-$this->article->syncCategories([$this->category, ...$this->tags]);
+$this->article->syncCategory($this->category);
+$this->article->syncCategories($this->tags, 'tags');
 
 return $this->article->save();
 ```

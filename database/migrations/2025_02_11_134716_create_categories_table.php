@@ -15,10 +15,8 @@ return new class extends Migration
                 ->index()
                 ->default(1);
             $table->string('model')
-                ->nullable()
                 ->index();
             $table->string('type')
-                ->nullable()
                 ->index();
             $table->string('name');
             $table->integer('sort')
@@ -34,11 +32,14 @@ return new class extends Migration
             $table->foreignId('category_id')
                 ->constrained()
                 ->cascadeOnDelete();
-            $table->integer('categoriable_id')
+            $table->morphs('categoriable');
+            $table->string('type')
                 ->index();
             $table->unique([
                 'category_id',
                 'categoriable_id',
+                'categoriable_type',
+                'type',
             ]);
         });
     }
