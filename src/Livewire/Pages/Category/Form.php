@@ -52,6 +52,7 @@ class Form extends LivewireForm
         $this->model = $model;
         $this->type = $type;
         $this->myConfig = $this->categoryConfig();
+        $this->image = collect();
 
         if ($category->exists) {
             $this->parent_id = $category->parent_id;
