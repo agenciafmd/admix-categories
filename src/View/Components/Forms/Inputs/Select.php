@@ -2,7 +2,7 @@
 
 namespace Agenciafmd\Categories\View\Components\Forms\Inputs;
 
-use Agenciafmd\Categories\Models\Category;
+use Agenciafmd\Categories\Services\CategoryService;
 use Illuminate\Support\Facades\View;
 use Illuminate\View\Component;
 
@@ -23,7 +23,7 @@ class Select extends Component
             ->limit(5, '')
             ->toString();
 
-        $options = (new $model)->categoriesToSelect($this->type);
+        $options = (new CategoryService())->toSelect($model, $this->type);
         $this->options = collect($options)->map(function ($item, $key) {
             return [
                 'value' => $key,

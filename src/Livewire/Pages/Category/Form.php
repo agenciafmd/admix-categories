@@ -4,7 +4,7 @@ namespace Agenciafmd\Categories\Livewire\Pages\Category;
 
 use Agenciafmd\Categories\Models\Category;
 use Agenciafmd\Ui\Traits\WithMediaSync;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Validate;
@@ -20,7 +20,7 @@ class Form extends LivewireForm
 
     public $type;
 
-    public $myConfig;
+    public $my_config;
 
     #[Validate]
     public int $parent_id = 0;
@@ -51,12 +51,12 @@ class Form extends LivewireForm
         $this->category = $category;
         $this->model = $model;
         $this->type = $type;
-        $this->myConfig = $this->categoryConfig();
+        $this->my_config = $this->categoryConfig();
         $this->image = collect();
 
         if ($category->exists) {
-            $this->parent_id = $category->parent_id;
             $this->is_active = $category->is_active;
+            $this->parent_id = $category->parent_id;
             $this->name = $category->name;
             $this->description = $category->description;
             $this->image = $category->image;
@@ -82,33 +82,34 @@ class Form extends LivewireForm
             ],
         ];
 
-        if ($this->myConfig['is_nested'] ?? false) {
+        if ($this->my_config['is_nested'] ?? false) {
             $rules['parent_id'] = [
                 'nullable',
                 'integer',
                 'exists:categories,id',
-                Rule::exists('categories')
+                Rule::exists('categories', 'id')
                     ->where(function (Builder $builder) {
                         $builder->where('model', $this->model)
-                            ->where('type', $this->type);
+                            ->where('type', $this->type)
+                            ->where('id', '!=', $this->category->id);
                     }),
             ];
         }
 
-        if ($this->myConfig['has_description'] ?? false) {
+        if ($this->my_config['has_description'] ?? false) {
             $rules['description'] = [
                 'nullable',
                 'string',
             ];
         }
 
-        if (!empty($this->myConfig['image'])) {
+        if (!empty($this->my_config['image'])) {
             $defaultImageRules = array_merge([
                 'max_size' => 1024 * 2, // 2MB
                 'max_width' => 400,
                 'max_height' => 400,
                 'ratio' => 1,
-            ], $this->myConfig['image']);
+            ], $this->my_config['image']);
 
             $rules = array_merge([
                 'image_files.*' => [
@@ -137,6 +138,7 @@ class Form extends LivewireForm
         return [
             'is_active' => __('admix-categories::fields.is_active'),
             'name' => __('admix-categories::fields.name'),
+            'parent_id' => __('admix-categories::fields.parent_id'),
             'description' => __('admix-categories::fields.description'),
             'image' => __('admix-categories::fields.image'),
             'image_files.*' => __('admix-categories::fields.image'),
@@ -153,7 +155,7 @@ class Form extends LivewireForm
             'image_files',
             'image_meta',
             'category',
-            'myConfig',
+            'my_config',
         );
         $this->category->fill($data);
 

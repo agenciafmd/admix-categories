@@ -42,16 +42,6 @@ trait WithCategories
             ->get();
     }
 
-    public function categoriesToSelect(string $type = 'categories'): array
-    {
-        return Category::query()
-            ->where('categories.model', self::class)
-            ->where('categories.type', $type)
-            ->sort()
-            ->pluck('name', 'id')
-            ->toArray();
-    }
-
     public function syncCategory(int $id, string $type = 'categories'): array
     {
         $ids = Arr::wrap($id);

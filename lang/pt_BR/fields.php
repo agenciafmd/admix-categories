@@ -6,4 +6,5 @@ return [
     'description' => 'descrição',
     'image' => 'imagem',
     'sort' => 'ordenação',
+    'parent_id' => 'categoria pai',
 ];

@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -38,9 +40,41 @@ class Category extends Model implements AuditableContract, HasMedia
         ];
     }
 
+    public function hasParent(): bool
+    {
+        return !empty($this->parent_id);
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'parent_id')
+            ->orderBy('parent_id')
+            ->sort();
+    }
+
+    public function parentRecursive(): BelongsTo
+    {
+        return $this->parent()
+            ->with('parentRecursive');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(Category::class, 'parent_id')
+            ->orderBy('parent_id')
+            ->sort();
+    }
+
+    public function childrenRecursive(): HasMany
+    {
+        return $this->children()
+            ->with('childrenRecursive');
+    }
+
     public function prunable(): Builder
     {
-        return static::query()->where('deleted_at', '<=', now()->subYear());
+        return static::query()
+            ->where('deleted_at', '<=', now()->subYear());
     }
 
     protected static function newFactory(): CategoryFactory|\Database\Factories\CategoryFactory

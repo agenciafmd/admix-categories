@@ -23,23 +23,22 @@
                     :label="__('admix-categories::fields.name')"
             />
         </div>
-        <div class="col-md-6 mb-3">
-            <!-- input here -->
-        </div>
 
-        {{--        @if($myConfig->has('category.parent_id'))--}}
-        {{--            <div class="col-md-6 mb-3">--}}
-        {{--                <x-form.select--}}
-        {{--                        name="form.parent_id"--}}
-        {{--                        :label="__('admix-categories::fields.parent')"--}}
-        {{--                        :options="$categories"--}}
-        {{--                        :option-label="'name'"--}}
-        {{--                        :option-value="'id'"--}}
-        {{--                />--}}
-        {{--            </div>--}}
-        {{--        </div>--}}
+        @if($this->form->my_config['is_nested'])
+            <div class="col-md-6 mb-3">
+                <x-categories::form.select
+                        name="form.parent_id"
+                        :label="__('admix-categories::fields.parent_id')"
+                        :model=\Agenciafmd\Articles\Models\Article::class
+                />
+            </div>
+        @else
+            <div class="col-md-6 mb-3">
+                <!-- input here -->
+            </div>
+        @endif
 
-        @if($this->form->myConfig['has_description'])
+        @if($this->form->my_config['has_description'])
             <div class="col-md-12 mb-3">
                 <x-form.easymde
                         name="form.description"
@@ -48,7 +47,7 @@
             </div>
         @endif
 
-        @if($this->form->myConfig['image'])
+        @if($this->form->my_config['image'])
             <div class="col-md-12 mb-3">
                 <x-form.image
                         name="form.image"
