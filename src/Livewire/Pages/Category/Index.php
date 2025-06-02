@@ -123,7 +123,7 @@ class Index extends BaseIndex
                 ->sortable()
                 ->searchable(),
             ...$this->additionalColumns,
-            Column::make(__('local-deaths::fields.sort'), 'sort')
+            Column::make(__('admix-categories::fields.sort'), 'sort')
                 ->sortable(),
             BooleanColumn::make(__('admix::fields.is_active'), 'is_active')
                 ->setView('admix-ui::livewire-tables.columns.boolean')
