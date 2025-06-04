@@ -23,7 +23,7 @@ class Select extends Component
             ->limit(5, '')
             ->toString();
 
-        $options = (new CategoryService())->toSelect($model, $this->type);
+        $options = (new CategoryService)->toSelect($model, $this->type);
         $this->options = collect($options)->map(function ($item, $key) {
             return [
                 'value' => $key,
@@ -40,21 +40,22 @@ class Select extends Component
                     {{ str($label)->lower()->ucfirst() }}
                 </x-form.label>
             @endif
-            <select wire:model.change="{{ $name }}" {{ $attributes->merge([
-                                    'type' => 'text',
-                                    'id' => $name . $uuid,
-                                ])->class([
-                                    'form-select',
-                                    'is-invalid' => $errors->has($name),
-                            ])
-                        }}
-                    >
-                @foreach($options as $option)
-                    @if(!$attributes->has('multiple') && $loop->first)
-                        <option value="" selected>{{ __('-') }}</option>
-                    @endif
-                    <option value="{{ $option['value'] }}" @disabled(isset($option['disabled']) && ($option['disabled']))>{{ $option['label'] }}</option>
-                @endforeach
+            <select wire:model.change="{{ $name }}" 
+                {{ $attributes->merge([
+                        'type' => 'text',
+                        'id' => $name . $uuid,
+                    ])->class([
+                        'form-select',
+                        'is-invalid' => $errors->has($name),
+                    ])
+                }}
+            >
+            @foreach($options as $option)
+                @if(!$attributes->has('multiple') && $loop->first)
+                    <option value="" selected>{{ __('-') }}</option>
+                @endif
+                <option value="{{ $option['value'] }}" @disabled(isset($option['disabled']) && ($option['disabled']))>{{ $option['label'] }}</option>
+            @endforeach
             </select>
             <x-form.error field="{{ $name }}"/>
             <x-form.hint message="{{ $hint }}"/>

@@ -14,6 +14,12 @@
             />
         </div>
         <div class="col-md-6 mb-3">
+            @if($this->form->my_config['has_color'])
+                <x-form.color
+                        name="form.color"
+                        :label="__('admix-categories::fields.color')"
+                />
+            @endif
         </div>
     </div>
     <div class="row">

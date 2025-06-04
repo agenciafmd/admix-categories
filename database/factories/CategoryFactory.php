@@ -15,6 +15,8 @@ class CategoryFactory extends Factory
             'is_active' => fake()->optional(0.3, 1)
                 ->randomElement([0]),
             'name' => str(fake()->word())->ucfirst(),
+            'color' => fake()->safeHexColor(),
+            'description' => fake()->text(),
             'type' => 'categories',
         ];
     }

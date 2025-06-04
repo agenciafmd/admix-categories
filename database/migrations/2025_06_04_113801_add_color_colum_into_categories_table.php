@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('categories', static function (Blueprint $table) {
             $table->after('name', static function (Blueprint $table) {
-                $table->text('description')
+                $table->string('color', 7)
                     ->nullable();
             });
         });

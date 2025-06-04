@@ -1,10 +1,11 @@
 <?php
 
 return [
-    'is_active' => 'ativo',
-    'name' => 'nome',
+    'color' => 'cor',
     'description' => 'descrição',
     'image' => 'imagem',
-    'sort' => 'ordenação',
+    'is_active' => 'ativo',
+    'name' => 'nome',
     'parent_id' => 'categoria pai',
+    'sort' => 'ordenação',
 ];
