@@ -88,16 +88,17 @@ class Form extends LivewireForm
 
         if ($this->my_config['is_nested'] ?? false) {
             $rules['parent_id'] = [
-                'nullable',
                 'integer',
-                'exists:categories,id',
-                Rule::exists('categories', 'id')
+            ];
+
+            if ($this->parent_id) {
+                $rules['parent_id'][] = Rule::exists('categories', 'id')
                     ->where(function (Builder $builder) {
                         $builder->where('model', $this->model)
                             ->where('type', $this->type)
                             ->where('id', '!=', $this->category->id);
-                    }),
-            ];
+                    });
+            }
         }
 
         if ($this->my_config['has_color'] ?? false) {

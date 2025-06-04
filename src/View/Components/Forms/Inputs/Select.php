@@ -52,7 +52,7 @@ class Select extends Component
             >
             @foreach($options as $option)
                 @if(!$attributes->has('multiple') && $loop->first)
-                    <option value="" selected>{{ __('-') }}</option>
+                    <option value="0" selected>{{ __('-') }}</option>
                 @endif
                 <option value="{{ $option['value'] }}" @disabled(isset($option['disabled']) && ($option['disabled']))>{{ $option['label'] }}</option>
             @endforeach
