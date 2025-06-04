@@ -32,7 +32,7 @@ class Form extends LivewireForm
     public string $name = '';
 
     #[Validate]
-    public string $color = '';
+    public ?string $color = '';
 
     #[Validate]
     public ?string $description = '';
