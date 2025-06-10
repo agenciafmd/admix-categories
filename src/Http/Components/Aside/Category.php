@@ -2,10 +2,10 @@
 
 namespace Agenciafmd\Categories\Http\Components\Aside;
 
-use Illuminate\Contracts\View\View;
-use Illuminate\View\Component;
-use Illuminate\Support\Facades\Gate;
 use Agenciafmd\Categories\Models\Category as CategoryModel;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\View\Component;
 
 class Category extends Component
 {

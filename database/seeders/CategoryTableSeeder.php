@@ -4,7 +4,6 @@ namespace Agenciafmd\Categories\Database\Seeders;
 
 use Agenciafmd\Categories\Models\Category;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Collection;
 
 class CategoryTableSeeder extends Seeder
 {

@@ -17,6 +17,7 @@ class Select extends Component
         public array $options = [],
         public mixed $model = null,
         public string $type = 'categories',
+        public bool $disableRoot = false
     ) {
         $this->uuid = '-' . str(serialize($this))
             ->pipe('md5')
@@ -28,6 +29,7 @@ class Select extends Component
             return [
                 'value' => $key,
                 'label' => $item,
+                'disabled' => $this->disableRoot && !str($item)->startsWith('|'),
             ];
         })->toArray();
     }

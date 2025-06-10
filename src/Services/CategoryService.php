@@ -32,7 +32,7 @@ class CategoryService
     {
         $data = [];
         foreach ($categories as $category) {
-            $data[] = "$category->id|$category->name|$level";
+            $data[] = "{$category->id}|{$category->name}|{$level}";
             if ($category->childrenRecursive->count() > 0) {
                 $level++;
                 $data[] = $this->recursive($category->childrenRecursive, $level);
