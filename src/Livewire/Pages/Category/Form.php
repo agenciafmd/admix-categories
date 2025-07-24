@@ -178,7 +178,9 @@ class Form extends LivewireForm
             $this->category->save();
         }
 
-        $this->syncMedia($this->category, 'image');
+        if (!empty($this->my_config['image'])) {
+            $this->syncMedia($this->category, 'image');
+        }
 
         return $this->category->save();
     }
