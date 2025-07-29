@@ -45,8 +45,11 @@ class Index extends BaseIndex
 
     public function configure(): void
     {
-        $this->packageName = __(config('admix-categories.name'));
         $this->setCategoryParams();
+
+        $modelConfig = collect(config('admix-categories.categories'))->firstWhere('model', $this->parsedCategoryModel);
+        $categoryName = collect($modelConfig['types'])->firstWhere('slug', $this->categoryType)['name'] ?? config('admix-categories.name');
+        $this->packageName = __($categoryName);
 
         parent::configure();
     }

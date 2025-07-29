@@ -1,5 +1,5 @@
 <x-page.form
-        title="{{ $category->exists ? __('Update :name', ['name' => __(config('admix-categories.name'))]) : __('Create :name', ['name' => __(config('admix-categories.name'))]) }}">
+        title="{{ $category->exists ? __('Update :name', ['name' => __($this->form->my_config['name'])]) : __('Create :name', ['name' => __($this->form->my_config['name'])]) }}">
     <div class="row">
         <div class="col-md-6 mb-3">
             <x-form.label
