@@ -2,6 +2,7 @@
 
 return [
     'color' => 'cor',
+    'title' => 'titulo',
     'description' => 'descrição',
     'image' => 'imagem',
     'is_active' => 'ativo',

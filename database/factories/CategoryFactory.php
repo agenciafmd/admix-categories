@@ -16,6 +16,7 @@ class CategoryFactory extends Factory
                 ->randomElement([0]),
             'name' => str(fake()->word())->ucfirst(),
             'color' => fake()->safeHexColor(),
+            'title' => fake()->sentence(),
             'description' => fake()->text(),
             'type' => 'categories',
         ];

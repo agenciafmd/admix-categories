@@ -44,6 +44,15 @@
             </div>
         @endif
 
+        @if($this->form->my_config['has_title'] ?? false)
+            <div class="col-md-6 mb-3">
+                <x-form.input
+                        name="form.title"
+                        :label="__('admix-categories::fields.title')"
+                />
+            </div>
+        @endif
+
         @if($this->form->my_config['has_description'])
             <div class="col-md-12 mb-3">
                 <x-form.easymde

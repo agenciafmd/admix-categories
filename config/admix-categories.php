@@ -15,6 +15,7 @@ return [
                     'slug' => 'categories',
                     'is_nested' => false,
                     'has_color' => false,
+                    'has_title' => false,
                     'has_description' => true,
                     'image' => [
                         'max_size' => '1024', // 1MB

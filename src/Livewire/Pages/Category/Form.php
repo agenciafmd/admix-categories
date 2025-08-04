@@ -35,6 +35,9 @@ class Form extends LivewireForm
     public ?string $color = '';
 
     #[Validate]
+    public ?string $title = '';
+
+    #[Validate]
     public ?string $description = '';
 
     #[Validate]
@@ -62,6 +65,7 @@ class Form extends LivewireForm
             $this->parent_id = $category->parent_id;
             $this->name = $category->name;
             $this->color = $category->color;
+            $this->title = $category->title;
             $this->description = $category->description;
             $this->image = $category->image;
             $this->image_meta = $this->image->pluck('meta')
@@ -110,6 +114,13 @@ class Form extends LivewireForm
             ];
         }
 
+        if ($this->my_config['has_title'] ?? false) {
+            $rules['title'] = [
+                'nullable',
+                'string',
+            ];
+        }
+
         if ($this->my_config['has_description'] ?? false) {
             $rules['description'] = [
                 'nullable',
@@ -154,6 +165,7 @@ class Form extends LivewireForm
             'name' => __('admix-categories::fields.name'),
             'parent_id' => __('admix-categories::fields.parent_id'),
             'color' => __('admix-categories::fields.color'),
+            'title' => __('admix-categories::fields.title'),
             'description' => __('admix-categories::fields.description'),
             'image' => __('admix-categories::fields.image'),
             'image_files.*' => __('admix-categories::fields.image'),
