@@ -73,6 +73,18 @@
             </div>
         @endif
 
+        @if($this->form->my_config['has_select'] ?? false)
+            <div class="col-md-6 mb-3">
+                <x-form.select
+                        name="form.option"
+                        :label="$this->form->my_config['select']['label'] ?? ''"
+                        :options="$this->form->my_config['select']['options'] ?? []"
+                />
+            </div>
+            <div class="col-md-6 mb-3">
+            </div>
+        @endif
+
         <div class="col-md-6 mb-3">
             <x-form.number
                     name="form.sort"

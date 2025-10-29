@@ -50,6 +50,9 @@ class Form extends LivewireForm
     public Collection $image;
 
     #[Validate]
+    public ?string $option = '';
+
+    #[Validate]
     public ?int $sort = null;
 
     public function setModel(Category $category, mixed $model, string $type): void
@@ -70,6 +73,7 @@ class Form extends LivewireForm
             $this->image = $category->image;
             $this->image_meta = $this->image->pluck('meta')
                 ->toArray();
+            $this->option = $category->option;
             $this->sort = $category->sort;
         }
     }
@@ -155,6 +159,13 @@ class Form extends LivewireForm
             ], $rules);
         }
 
+        if ($this->my_config['has_select'] ?? false) {
+            $rules['option'] = [
+                'nullable',
+                'string',
+            ];
+        }
+
         return $rules;
     }
 
@@ -170,6 +181,7 @@ class Form extends LivewireForm
             'image' => __('admix-categories::fields.image'),
             'image_files.*' => __('admix-categories::fields.image'),
             'image_meta' => __('admix-categories::fields.image'),
+            'option' => $this->my_config['has_select']['label'] ?? __('admix-categories::fields.option'),
             'sort' => __('admix-categories::fields.sort'),
         ];
     }

@@ -17,6 +17,16 @@ return [
                     'has_color' => false,
                     'has_title' => false,
                     'has_description' => true,
+                    'has_select' => false,
+                    'select' => [
+                        'label' => '',
+                        'options' => [
+                            [
+                                'value' => '',
+                                'label' => '-',
+                            ],
+                        ],
+                    ],
                     'image' => [
                         'max_size' => '1024', // 1MB
                         'max_width' => '200',
